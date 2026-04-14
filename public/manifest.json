@@ -1,0 +1,17 @@
+{
+  "name": "Black Tide — 해적의 항해",
+  "short_name": "Black Tide",
+  "description": "Top-down naval combat game with historical ships",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050B14",
+  "theme_color": "#D4A847",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

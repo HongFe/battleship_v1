@@ -1,0 +1,25 @@
+{
+  "name": "battleship_v1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "DEPLOY=gh-pages vite build && echo '배포 완료: dist/ 폴더를 GitHub Pages에 올려주세요'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "phaser": "^3.90.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.5",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  }
+}

@@ -1,0 +1,1311 @@
+{
+  "_comment": "Planning Agent 관리. 수치 변경 시 CHANGELOG.md 기록 필수",
+  "_version": "0.1.0",
+  "ships": {
+    "patrolboat": {
+      "id": "patrolboat",
+      "displayName": "통통배",
+      "hp": 250,
+      "speed": 70,
+      "armor": 5,
+      "slots": {
+        "weapon": 1,
+        "armor": 1,
+        "special": 1
+      },
+      "cost": 0,
+      "spriteName": "ship_patrolboat_hq",
+      "nation": "KOR",
+      "era": "Modern",
+      "flavor": "작은 어선. 모험의 시작.",
+      "skill": {
+        "type": "dash",
+        "cooldown": 8,
+        "duration": 2,
+        "displayName": "DASH"
+      },
+      "role": "speed",
+      "tier": 1
+    },
+    "trireme": {
+      "id": "trireme",
+      "displayName": "Greek Trireme",
+      "hp": 600,
+      "speed": 36,
+      "armor": 12,
+      "slots": {
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
+      },
+      "cost": 700,
+      "spriteName": "ship_trireme_hq",
+      "nation": "HISTORIC",
+      "era": "Ancient Greece",
+      "flavor": "고대 그리스 갤리. 청동 ram으로 적함을 들이받는다.",
+      "skill": {
+        "type": "ram",
+        "cooldown": 12,
+        "duration": 3,
+        "damage": 200,
+        "displayName": "RAM"
+      },
+      "role": "speed",
+      "tier": 2
+    },
+    "viking": {
+      "id": "viking",
+      "displayName": "Viking Longship",
+      "hp": 500,
+      "speed": 38,
+      "armor": 14,
+      "slots": {
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
+      },
+      "cost": 900,
+      "spriteName": "ship_viking_hq",
+      "skill": {
+        "type": "berserk",
+        "cooldown": 18,
+        "duration": 6,
+        "displayName": "BERSERK"
+      },
+      "nation": "HISTORIC",
+      "era": "8th-11th c.",
+      "flavor": "바이킹 롱십. 빠르고 좁은 바다 약탈자.",
+      "role": "speed",
+      "tier": 2
+    },
+    "destroyer": {
+      "id": "destroyer",
+      "displayName": "ROKS Sejong",
+      "hp": 450,
+      "speed": 58,
+      "armor": 12,
+      "slots": {
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
+      },
+      "cost": 600,
+      "spriteName": "ship_destroyer_hq",
+      "skill": {
+        "type": "tracer_round",
+        "cooldown": 10,
+        "damage": 350,
+        "range": 375,
+        "displayName": "TRACER"
+      },
+      "nation": "KOR",
+      "era": "Modern",
+      "flavor": "세종대왕급 이지스 구축함 (KDX-III).",
+      "role": "dps",
+      "tier": 2
+    },
+    "cruiser": {
+      "id": "cruiser",
+      "displayName": "HMS Belfast",
+      "hp": 750,
+      "speed": 42,
+      "armor": 22,
+      "slots": {
+        "weapon": 3,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 1400,
+      "spriteName": "ship_cruiser_hq",
+      "skill": {
+        "type": "heal_aura",
+        "cooldown": 18,
+        "duration": 4,
+        "displayName": "REPAIR FLEET",
+        "damage": 200
+      },
+      "nation": "GBR",
+      "era": "WWII 1939",
+      "flavor": "HMS Belfast — 함대 수리 지원함. 주변 아군을 치료한다.",
+      "role": "support",
+      "tier": 3
+    },
+    "pirate": {
+      "id": "pirate",
+      "displayName": "Queen Anne's Revenge",
+      "hp": 700,
+      "speed": 48,
+      "armor": 18,
+      "slots": {
+        "weapon": 3,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 1500,
+      "spriteName": "ship_pirate_hq",
+      "skill": {
+        "type": "plunder",
+        "cooldown": 16,
+        "displayName": "PLUNDER"
+      },
+      "nation": "HISTORIC",
+      "era": "Golden Age 1717",
+      "flavor": "Blackbeard의 Queen Anne's Revenge. 40문 프리깃.",
+      "role": "speed",
+      "tier": 3
+    },
+    "galleon": {
+      "id": "galleon",
+      "displayName": "Spanish Galleon",
+      "hp": 950,
+      "speed": 36,
+      "armor": 26,
+      "slots": {
+        "weapon": 4,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 1700,
+      "spriteName": "ship_galleon_hq",
+      "skill": {
+        "type": "broadside",
+        "cooldown": 14,
+        "displayName": "BROADSIDE"
+      },
+      "nation": "HISTORIC",
+      "era": "16-18th c.",
+      "flavor": "스페인 갤리온. 보물선의 대명사.",
+      "role": "artillery",
+      "tier": 3
+    },
+    "panokseon": {
+      "id": "panokseon",
+      "displayName": "판옥선",
+      "hp": 900,
+      "speed": 38,
+      "armor": 28,
+      "slots": {
+        "weapon": 4,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 1900,
+      "spriteName": "ship_panokseon_hq",
+      "skill": {
+        "type": "volley",
+        "cooldown": 14,
+        "damage": 60,
+        "range": 210,
+        "displayName": "VOLLEY"
+      },
+      "nation": "KOR",
+      "era": "1592 임진왜란",
+      "flavor": "조선 수군 주력함. 이순신 장군이 활용.",
+      "role": "artillery",
+      "tier": 3
+    },
+    "submarine": {
+      "id": "submarine",
+      "displayName": "K-141 Kursk",
+      "hp": 700,
+      "speed": 52,
+      "armor": 18,
+      "slots": {
+        "weapon": 3,
+        "armor": 2,
+        "special": 2
+      },
+      "cost": 2200,
+      "spriteName": "ship_submarine_hq",
+      "skill": {
+        "type": "stealth",
+        "cooldown": 22,
+        "duration": 5,
+        "displayName": "STEALTH"
+      },
+      "nation": "RUS",
+      "era": "Modern 1994",
+      "flavor": "K-141 Kursk — 러시아 Oscar-II 핵잠수함.",
+      "role": "speed",
+      "tier": 3
+    },
+    "battleship": {
+      "id": "battleship",
+      "displayName": "KMS Bismarck",
+      "hp": 1500,
+      "speed": 26,
+      "armor": 42,
+      "slots": {
+        "weapon": 5,
+        "armor": 3,
+        "special": 1
+      },
+      "cost": 2800,
+      "spriteName": "ship_battleship_hq",
+      "skill": {
+        "type": "salvo",
+        "cooldown": 18,
+        "displayName": "SALVO"
+      },
+      "nation": "GER",
+      "era": "WWII 1939",
+      "flavor": "KMS Bismarck — 41,700톤. HMS Hood를 격침시킨 독일 전함.",
+      "role": "tank",
+      "tier": 4
+    },
+    "turtleship": {
+      "id": "turtleship",
+      "displayName": "거북선",
+      "hp": 1300,
+      "speed": 32,
+      "armor": 55,
+      "slots": {
+        "weapon": 6,
+        "armor": 3,
+        "special": 1
+      },
+      "cost": 3300,
+      "spriteName": "ship_turtleship_hq",
+      "skill": {
+        "type": "fire_breath",
+        "cooldown": 15,
+        "damage": 280,
+        "range": 210,
+        "displayName": "FIRE BREATH"
+      },
+      "nation": "KOR",
+      "era": "1592 임진왜란",
+      "flavor": "거북선. 이순신 장군의 철갑선. 용 머리에서 화염을 뿜는다.",
+      "role": "tank",
+      "tier": 4
+    },
+    "carrier": {
+      "id": "carrier",
+      "displayName": "USS Enterprise",
+      "hp": 1800,
+      "speed": 22,
+      "armor": 45,
+      "slots": {
+        "weapon": 4,
+        "armor": 4,
+        "special": 3
+      },
+      "cost": 4500,
+      "spriteName": "ship_carrier_hq",
+      "skill": {
+        "type": "plane_burst",
+        "cooldown": 20,
+        "displayName": "AIR STRIKE"
+      },
+      "nation": "USA",
+      "era": "WWII 1936",
+      "flavor": "USS Enterprise (CV-6) — 태평양 전쟁 가장 많은 무공의 항모.",
+      "role": "artillery",
+      "tier": 4
+    },
+    "yamato": {
+      "id": "yamato",
+      "displayName": "大和 (Yamato)",
+      "hp": 1700,
+      "speed": 22,
+      "armor": 55,
+      "slots": {
+        "weapon": 6,
+        "armor": 4,
+        "special": 2
+      },
+      "cost": 5000,
+      "spriteName": "ship_yamato_hq",
+      "nation": "JPN",
+      "era": "WWII 1940",
+      "flavor": "역사상 가장 큰 전함. 18.1인치 9문, 72,000톤. 1945년 격침.",
+      "skill": {
+        "type": "salvo",
+        "cooldown": 22,
+        "displayName": "BANZAI SALVO"
+      },
+      "role": "tank",
+      "tier": 5
+    },
+    "iowa": {
+      "id": "iowa",
+      "displayName": "USS Iowa",
+      "hp": 1450,
+      "speed": 36,
+      "armor": 38,
+      "slots": {
+        "weapon": 5,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 3200,
+      "spriteName": "ship_iowa_hq",
+      "nation": "USA",
+      "era": "WWII 1942",
+      "flavor": "16인치 9문, 33노트. 가장 빠른 미국 전함. 한국전·걸프전에도 참전.",
+      "skill": {
+        "type": "salvo",
+        "cooldown": 18,
+        "displayName": "FAST SALVO"
+      },
+      "role": "dps",
+      "tier": 4
+    },
+    "hood": {
+      "id": "hood",
+      "displayName": "HMS Hood",
+      "hp": 1200,
+      "speed": 38,
+      "armor": 28,
+      "slots": {
+        "weapon": 4,
+        "armor": 2,
+        "special": 2
+      },
+      "cost": 2500,
+      "spriteName": "ship_hood_hq",
+      "nation": "GBR",
+      "era": "WWII 1920",
+      "flavor": "Royal Navy 자존심. 32노트 battlecruiser. 1941년 Bismarck에 격침.",
+      "skill": {
+        "type": "salvo",
+        "cooldown": 16,
+        "displayName": "HOOD'S WRATH"
+      },
+      "role": "dps",
+      "tier": 4
+    },
+    "akagi": {
+      "id": "akagi",
+      "displayName": "赤城 (Akagi)",
+      "hp": 1700,
+      "speed": 28,
+      "armor": 40,
+      "slots": {
+        "weapon": 3,
+        "armor": 4,
+        "special": 3
+      },
+      "cost": 4800,
+      "spriteName": "ship_akagi_hq",
+      "nation": "JPN",
+      "era": "WWII 1927",
+      "flavor": "진주만 공습 기함. Mitsuo Fuchida 제독 함. 미드웨이에서 격침.",
+      "skill": {
+        "type": "plane_burst",
+        "cooldown": 18,
+        "displayName": "PEARL HARBOR"
+      },
+      "role": "artillery",
+      "tier": 5
+    },
+    "pyotr": {
+      "id": "pyotr",
+      "displayName": "Pyotr Velikiy",
+      "hp": 1500,
+      "speed": 30,
+      "armor": 42,
+      "slots": {
+        "weapon": 5,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 3500,
+      "spriteName": "ship_pyotr_hq",
+      "nation": "RUS",
+      "era": "Modern 1989",
+      "flavor": "Kirov-class 핵추진 전투순양함. 러시아 북해함대 기함. 28,000톤.",
+      "skill": {
+        "type": "salvo",
+        "cooldown": 18,
+        "displayName": "KIROV SALVO"
+      },
+      "role": "artillery",
+      "tier": 4
+    },
+    "blackpearl": {
+      "id": "blackpearl",
+      "displayName": "Black Pearl",
+      "hp": 850,
+      "speed": 60,
+      "armor": 22,
+      "slots": {
+        "weapon": 4,
+        "armor": 2,
+        "special": 2
+      },
+      "cost": 2400,
+      "spriteName": "ship_blackpearl_hq",
+      "nation": "PIRATE",
+      "era": "Jack Sparrow's flagship",
+      "flavor": "저주받은 검은 돛의 전설. 가장 빠른 해적선.",
+      "skill": {
+        "type": "dash",
+        "cooldown": 10,
+        "duration": 3,
+        "displayName": "GHOST DASH"
+      },
+      "role": "speed",
+      "tier": 3
+    },
+    "flyingdutchman": {
+      "id": "flyingdutchman",
+      "displayName": "Flying Dutchman",
+      "hp": 1100,
+      "speed": 38,
+      "armor": 35,
+      "slots": {
+        "weapon": 4,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 3000,
+      "spriteName": "ship_flyingdutchman_hq",
+      "nation": "PIRATE",
+      "era": "Davy Jones' cursed",
+      "flavor": "데이비 존스의 저주받은 유령선. 영원히 바다를 떠돈다.",
+      "skill": {
+        "type": "stealth",
+        "cooldown": 18,
+        "duration": 5,
+        "displayName": "PHANTOM"
+      },
+      "role": "tank",
+      "tier": 4
+    },
+    "royalfortune": {
+      "id": "royalfortune",
+      "displayName": "Royal Fortune",
+      "hp": 950,
+      "speed": 45,
+      "armor": 26,
+      "slots": {
+        "weapon": 5,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 2200,
+      "spriteName": "ship_royalfortune_hq",
+      "nation": "PIRATE",
+      "era": "1720 Black Bart",
+      "flavor": "Bartholomew Roberts의 기함. 황금과 진홍의 40문 프리깃.",
+      "skill": {
+        "type": "broadside",
+        "cooldown": 13,
+        "displayName": "PIRATE FURY"
+      },
+      "role": "dps",
+      "tier": 3
+    },
+    "kraken": {
+      "id": "kraken",
+      "displayName": "🐙 Kraken",
+      "hp": 2200,
+      "speed": 20,
+      "armor": 60,
+      "slots": {
+        "weapon": 4,
+        "armor": 5,
+        "special": 3
+      },
+      "cost": 6000,
+      "spriteName": "ship_battleship_hq",
+      "nation": "MYTH",
+      "era": "Ancient Legend",
+      "flavor": "심해의 괴물. 촉수로 적을 속박하고 끌어당긴다.",
+      "role": "tank",
+      "tier": 5,
+      "skill": {
+        "type": "fire_breath",
+        "cooldown": 20,
+        "damage": 400,
+        "range": 225,
+        "displayName": "TENTACLE SLAM"
+      }
+    },
+    "phoenix": {
+      "id": "phoenix",
+      "displayName": "🔥 Phoenix Ship",
+      "hp": 1400,
+      "speed": 35,
+      "armor": 30,
+      "slots": {
+        "weapon": 5,
+        "armor": 3,
+        "special": 3
+      },
+      "cost": 5500,
+      "spriteName": "ship_battleship_hq",
+      "nation": "MYTH",
+      "era": "Eternal Flame",
+      "flavor": "불사조의 선체. 격침되어도 50% HP로 부활한다.",
+      "role": "dps",
+      "tier": 5,
+      "skill": {
+        "type": "fire_breath",
+        "cooldown": 25,
+        "damage": 350,
+        "range": 187,
+        "displayName": "FIRE STORM"
+      }
+    },
+    "ghostship": {
+      "id": "ghostship",
+      "displayName": "👻 Ghost Ship",
+      "hp": 1000,
+      "speed": 55,
+      "armor": 20,
+      "slots": {
+        "weapon": 5,
+        "armor": 2,
+        "special": 4
+      },
+      "cost": 5000,
+      "spriteName": "ship_flyingdutchman_hq",
+      "nation": "MYTH",
+      "era": "Spectral Realm",
+      "flavor": "유령선. 투명화 후 기습하면 치명적 데미지.",
+      "role": "speed",
+      "tier": 5,
+      "skill": {
+        "type": "stealth",
+        "cooldown": 16,
+        "duration": 6,
+        "displayName": "PHANTOM STRIKE"
+      }
+    },
+    "thundership": {
+      "id": "thundership",
+      "displayName": "⚡ Zeus Thunder",
+      "hp": 1600,
+      "speed": 28,
+      "armor": 35,
+      "slots": {
+        "weapon": 6,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 5800,
+      "spriteName": "ship_battleship_hq",
+      "nation": "MYTH",
+      "era": "Olympus",
+      "flavor": "제우스의 전함. 번개가 적 함대를 초토화한다.",
+      "role": "artillery",
+      "tier": 5,
+      "skill": {
+        "type": "salvo",
+        "cooldown": 20,
+        "displayName": "THUNDER WRATH"
+      }
+    },
+    "medic": {
+      "id": "medic",
+      "displayName": "HMS Salvation",
+      "hp": 900,
+      "speed": 40,
+      "armor": 25,
+      "slots": {
+        "weapon": 2,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 1800,
+      "spriteName": "ship_cruiser_hq",
+      "nation": "GBR",
+      "era": "Support Class",
+      "flavor": "의무함. 주변 아군 HP를 대량 회복. 호위 필수.",
+      "role": "support",
+      "tier": 3,
+      "skill": {
+        "type": "heal_aura",
+        "cooldown": 15,
+        "duration": 5,
+        "damage": 300,
+        "displayName": "MASS HEAL"
+      }
+    },
+    "seawitch": {
+      "id": "seawitch",
+      "displayName": "🌊 Sea Witch",
+      "hp": 1200,
+      "speed": 30,
+      "armor": 35,
+      "slots": {
+        "weapon": 3,
+        "armor": 4,
+        "special": 3
+      },
+      "cost": 4000,
+      "spriteName": "ship_flyingdutchman_hq",
+      "nation": "MYTH",
+      "era": "Deep Ocean",
+      "flavor": "바다의 마녀. 그물로 적을 속박하고 느리게 만든다.",
+      "role": "support",
+      "tier": 4,
+      "skill": {
+        "type": "net_throw",
+        "cooldown": 14,
+        "duration": 4,
+        "range": 300,
+        "displayName": "SEA NET"
+      }
+    },
+    "hwacha": {
+      "id": "hwacha",
+      "displayName": "화차선 (Hwacha)",
+      "hp": 800,
+      "speed": 38,
+      "armor": 22,
+      "slots": {
+        "weapon": 4,
+        "armor": 2,
+        "special": 1
+      },
+      "cost": 1600,
+      "spriteName": "ship_panokseon_hq",
+      "nation": "KOR",
+      "era": "1592 임진왜란",
+      "flavor": "신기전 화차. 화살비로 적을 느리게 만든다.",
+      "role": "artillery",
+      "tier": 3,
+      "skill": {
+        "type": "volley",
+        "cooldown": 12,
+        "damage": 80,
+        "range": 250,
+        "displayName": "HWACHA RAIN"
+      }
+    },
+    "warcrier": {
+      "id": "warcrier",
+      "displayName": "⚔ War Drummer",
+      "hp": 1000,
+      "speed": 42,
+      "armor": 28,
+      "slots": {
+        "weapon": 3,
+        "armor": 3,
+        "special": 2
+      },
+      "cost": 2000,
+      "spriteName": "ship_galleon_hq",
+      "nation": "HISTORIC",
+      "era": "Ancient Fleet",
+      "flavor": "전쟁 북소리로 아군의 사기를 높인다. 속도+공격 버프.",
+      "role": "support",
+      "tier": 3,
+      "skill": {
+        "type": "war_cry",
+        "cooldown": 22,
+        "duration": 6,
+        "displayName": "WAR CRY"
+      }
+    }
+  },
+  "items": {
+    "_comment_sniper": "=== SNIPER 저격: 장거리, 저속, 고데미지 ===",
+    "marksman_rifle": {
+      "id": "marksman_rifle",
+      "displayName": "Marksman Rifle",
+      "type": "weapon",
+      "category": "sniper",
+      "damage": 60,
+      "range": 172,
+      "attackSpeed": 0.6,
+      "projectileType": "normal",
+      "projectileSpeed": 800,
+      "splashRadius": 0,
+      "cost": 100,
+      "spriteName": "item_marksman",
+      "description": "기본 저격총. 정확하지만 느림."
+    },
+    "long_rifle": {
+      "id": "long_rifle",
+      "displayName": "Long Rifle",
+      "type": "weapon",
+      "category": "sniper",
+      "damage": 130,
+      "range": 210,
+      "attackSpeed": 0.48,
+      "projectileType": "normal",
+      "projectileSpeed": 900,
+      "splashRadius": 0,
+      "cost": 280,
+      "spriteName": "item_long_rifle",
+      "description": "장거리 저격소총."
+    },
+    "heavy_sniper": {
+      "id": "heavy_sniper",
+      "displayName": "Heavy Sniper",
+      "type": "weapon",
+      "category": "sniper",
+      "damage": 220,
+      "range": 240,
+      "attackSpeed": 0.3,
+      "projectileType": "normal",
+      "projectileSpeed": 1000,
+      "splashRadius": 0,
+      "cost": 550,
+      "spriteName": "item_heavy_sniper",
+      "description": "중구경 대물 저격포."
+    },
+    "railgun": {
+      "id": "railgun",
+      "displayName": "Railgun",
+      "type": "weapon",
+      "category": "sniper",
+      "damage": 380,
+      "range": 270,
+      "attackSpeed": 0.24,
+      "projectileType": "rail",
+      "projectileSpeed": 1500,
+      "splashRadius": 0,
+      "cost": 950,
+      "spriteName": "item_railgun",
+      "description": "전자기 가속 관통탄. 모든 적을 꿰뚫는다."
+    },
+    "orbital_cannon": {
+      "id": "orbital_cannon",
+      "displayName": "Orbital Cannon",
+      "type": "weapon",
+      "category": "sniper",
+      "damage": 700,
+      "range": 315,
+      "attackSpeed": 0.15,
+      "projectileType": "rail",
+      "projectileSpeed": 1800,
+      "splashRadius": 0,
+      "cost": 2200,
+      "spriteName": "item_orbital",
+      "description": "초장거리 궤도 포격. 일격필살."
+    },
+    "_comment_rapid": "=== RAPID 단거리 다발: 근거리, 고속, 저데미지 ===",
+    "pop_gun": {
+      "id": "pop_gun",
+      "displayName": "Pop Gun",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 18,
+      "range": 112,
+      "attackSpeed": 3.0,
+      "projectileType": "normal",
+      "projectileSpeed": 600,
+      "splashRadius": 0,
+      "cost": 80,
+      "spriteName": "item_pop",
+      "description": "값싼 연발포."
+    },
+    "rapid_gun": {
+      "id": "rapid_gun",
+      "displayName": "Rapid Gun",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 35,
+      "range": 150,
+      "attackSpeed": 2.7,
+      "projectileType": "normal",
+      "projectileSpeed": 650,
+      "splashRadius": 0,
+      "cost": 200,
+      "spriteName": "item_rapid_gun",
+      "description": "근거리 속사포."
+    },
+    "vulcan": {
+      "id": "vulcan",
+      "displayName": "Vulcan",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 50,
+      "range": 157,
+      "attackSpeed": 3.6,
+      "projectileType": "normal",
+      "projectileSpeed": 700,
+      "splashRadius": 0,
+      "cost": 450,
+      "spriteName": "item_vulcan",
+      "description": "고속 자동포."
+    },
+    "gatling": {
+      "id": "gatling",
+      "displayName": "Gatling Cannon",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 40,
+      "range": 165,
+      "attackSpeed": 4.8,
+      "projectileType": "normal",
+      "projectileSpeed": 750,
+      "splashRadius": 0,
+      "cost": 750,
+      "spriteName": "item_gatling_c",
+      "description": "회전식 다총신 기관포."
+    },
+    "plasma_gatling": {
+      "id": "plasma_gatling",
+      "displayName": "Plasma Gatling",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 55,
+      "range": 172,
+      "attackSpeed": 5.4,
+      "projectileType": "laser",
+      "projectileSpeed": 850,
+      "splashRadius": 0,
+      "cost": 1300,
+      "spriteName": "item_pgatling",
+      "description": "플라즈마 가속 기관포."
+    },
+    "_comment_splash": "=== SPLASH 광역폭발 ===",
+    "mortar": {
+      "id": "mortar",
+      "displayName": "Mortar",
+      "type": "weapon",
+      "category": "splash",
+      "damage": 100,
+      "range": 165,
+      "attackSpeed": 0.42,
+      "projectileType": "splash",
+      "projectileSpeed": 300,
+      "splashRadius": 50,
+      "cost": 220,
+      "spriteName": "item_mortar",
+      "description": "고폭 박격포."
+    },
+    "heavy_mortar": {
+      "id": "heavy_mortar",
+      "displayName": "Heavy Mortar",
+      "type": "weapon",
+      "category": "splash",
+      "damage": 200,
+      "range": 187,
+      "attackSpeed": 0.3,
+      "projectileType": "splash",
+      "projectileSpeed": 280,
+      "splashRadius": 75,
+      "cost": 520,
+      "spriteName": "item_heavy_mortar",
+      "description": "중구경 박격포."
+    },
+    "plasma_cannon": {
+      "id": "plasma_cannon",
+      "displayName": "Plasma Cannon",
+      "type": "weapon",
+      "category": "splash",
+      "damage": 250,
+      "range": 187,
+      "attackSpeed": 0.3,
+      "projectileType": "plasma",
+      "projectileSpeed": 280,
+      "splashRadius": 95,
+      "cost": 850,
+      "spriteName": "item_plasma",
+      "description": "플라즈마 폭발탄."
+    },
+    "nuke_launcher": {
+      "id": "nuke_launcher",
+      "displayName": "Nuke Launcher",
+      "type": "weapon",
+      "category": "splash",
+      "damage": 500,
+      "range": 217,
+      "attackSpeed": 0.18,
+      "projectileType": "splash",
+      "projectileSpeed": 260,
+      "splashRadius": 140,
+      "cost": 1900,
+      "spriteName": "item_nuke",
+      "description": "전술 핵미사일. 광역 초토화."
+    },
+    "_comment_pierce": "=== PIERCE 관통 ===",
+    "spear_gun": {
+      "id": "spear_gun",
+      "displayName": "Spear Gun",
+      "type": "weapon",
+      "category": "pierce",
+      "damage": 60,
+      "range": 150,
+      "attackSpeed": 0.9,
+      "projectileType": "piercing",
+      "projectileSpeed": 400,
+      "splashRadius": 0,
+      "cost": 150,
+      "spriteName": "item_spear",
+      "description": "수중 작살. 적을 꿰뚫음."
+    },
+    "torpedo": {
+      "id": "torpedo",
+      "displayName": "Heavy Torpedo",
+      "type": "weapon",
+      "category": "pierce",
+      "damage": 180,
+      "range": 165,
+      "attackSpeed": 0.54,
+      "projectileType": "piercing",
+      "projectileSpeed": 350,
+      "splashRadius": 0,
+      "cost": 380,
+      "spriteName": "item_torpedo",
+      "description": "중어뢰. 일렬 다중관통."
+    },
+    "lance": {
+      "id": "lance",
+      "displayName": "Energy Lance",
+      "type": "weapon",
+      "category": "pierce",
+      "damage": 280,
+      "range": 187,
+      "attackSpeed": 0.42,
+      "projectileType": "piercing",
+      "projectileSpeed": 500,
+      "splashRadius": 0,
+      "cost": 720,
+      "spriteName": "item_lance",
+      "description": "에너지 창. 강력한 관통력."
+    },
+    "_comment_homing": "=== HOMING 유도 ===",
+    "mini_missile": {
+      "id": "mini_missile",
+      "displayName": "Mini Missile",
+      "type": "weapon",
+      "category": "homing",
+      "damage": 50,
+      "range": 187,
+      "attackSpeed": 0.9,
+      "projectileType": "homing",
+      "projectileSpeed": 320,
+      "splashRadius": 20,
+      "cost": 250,
+      "spriteName": "item_mini_missile",
+      "description": "소형 유도탄."
+    },
+    "missile_launcher": {
+      "id": "missile_launcher",
+      "displayName": "Missile Launcher",
+      "type": "weapon",
+      "category": "homing",
+      "damage": 130,
+      "range": 225,
+      "attackSpeed": 0.42,
+      "projectileType": "homing",
+      "projectileSpeed": 280,
+      "splashRadius": 45,
+      "cost": 620,
+      "spriteName": "item_missile",
+      "description": "표준 유도 미사일."
+    },
+    "smart_bomb": {
+      "id": "smart_bomb",
+      "displayName": "Smart Bomb",
+      "type": "weapon",
+      "category": "homing",
+      "damage": 220,
+      "range": 255,
+      "attackSpeed": 0.3,
+      "projectileType": "homing",
+      "projectileSpeed": 300,
+      "splashRadius": 60,
+      "cost": 1250,
+      "spriteName": "item_smart_bomb",
+      "description": "AI 유도 정밀 폭탄."
+    },
+    "_comment_chain": "=== CHAIN 체인 라이트닝 ===",
+    "tesla_spark": {
+      "id": "tesla_spark",
+      "displayName": "Tesla Spark",
+      "type": "weapon",
+      "category": "chain",
+      "damage": 50,
+      "range": 150,
+      "attackSpeed": 1.2,
+      "projectileType": "chain",
+      "projectileSpeed": 700,
+      "splashRadius": 0,
+      "cost": 300,
+      "spriteName": "item_spark",
+      "description": "소형 테슬라. 적 사이로 튐."
+    },
+    "tesla_coil": {
+      "id": "tesla_coil",
+      "displayName": "Tesla Coil",
+      "type": "weapon",
+      "category": "chain",
+      "damage": 90,
+      "range": 172,
+      "attackSpeed": 0.78,
+      "projectileType": "chain",
+      "projectileSpeed": 700,
+      "splashRadius": 0,
+      "cost": 620,
+      "spriteName": "item_tesla",
+      "description": "테슬라 코일. 체인 라이트닝."
+    },
+    "mega_tesla": {
+      "id": "mega_tesla",
+      "displayName": "Mega Tesla",
+      "type": "weapon",
+      "category": "chain",
+      "damage": 140,
+      "range": 187,
+      "attackSpeed": 0.6,
+      "projectileType": "chain",
+      "projectileSpeed": 800,
+      "splashRadius": 0,
+      "cost": 1150,
+      "spriteName": "item_mega_tesla",
+      "description": "초강력 체인 라이트닝."
+    },
+    "_comment_flame": "=== FLAME 화염 ===",
+    "flare_gun": {
+      "id": "flare_gun",
+      "displayName": "Flare Gun",
+      "type": "weapon",
+      "category": "flame",
+      "damage": 12,
+      "range": 100,
+      "attackSpeed": 4.8,
+      "projectileType": "flame",
+      "projectileSpeed": 320,
+      "splashRadius": 0,
+      "cost": 130,
+      "spriteName": "item_flare",
+      "description": "조명탄형 소형 화염."
+    },
+    "flame_cannon": {
+      "id": "flame_cannon",
+      "displayName": "Flame Cannon",
+      "type": "weapon",
+      "category": "flame",
+      "damage": 25,
+      "range": 120,
+      "attackSpeed": 4.2,
+      "projectileType": "flame",
+      "projectileSpeed": 320,
+      "splashRadius": 0,
+      "cost": 380,
+      "spriteName": "item_flame",
+      "description": "근접 화염방사기."
+    },
+    "inferno": {
+      "id": "inferno",
+      "displayName": "Inferno",
+      "type": "weapon",
+      "category": "flame",
+      "damage": 45,
+      "range": 135,
+      "attackSpeed": 4.8,
+      "projectileType": "flame",
+      "projectileSpeed": 340,
+      "splashRadius": 0,
+      "cost": 850,
+      "spriteName": "item_inferno",
+      "description": "지옥불 분사기."
+    },
+    "_comment_beam": "=== BEAM 빔/레이저 ===",
+    "laser_pointer": {
+      "id": "laser_pointer",
+      "displayName": "Laser Pointer",
+      "type": "weapon",
+      "category": "beam",
+      "damage": 18,
+      "range": 157,
+      "attackSpeed": 6.0,
+      "projectileType": "laser",
+      "projectileSpeed": 1000,
+      "splashRadius": 0,
+      "cost": 200,
+      "spriteName": "item_laser_p",
+      "description": "초고속 저데미지 레이저."
+    },
+    "gatling_laser": {
+      "id": "gatling_laser",
+      "displayName": "Gatling Laser",
+      "type": "weapon",
+      "category": "beam",
+      "damage": 25,
+      "range": 165,
+      "attackSpeed": 5.4,
+      "projectileType": "laser",
+      "projectileSpeed": 950,
+      "splashRadius": 0,
+      "cost": 580,
+      "spriteName": "item_gatling",
+      "description": "다총신 레이저 연사기."
+    },
+    "heavy_laser": {
+      "id": "heavy_laser",
+      "displayName": "Heavy Laser",
+      "type": "weapon",
+      "category": "beam",
+      "damage": 60,
+      "range": 187,
+      "attackSpeed": 4.2,
+      "projectileType": "laser",
+      "projectileSpeed": 1100,
+      "splashRadius": 0,
+      "cost": 1100,
+      "spriteName": "item_h_laser",
+      "description": "고출력 빔 발사기."
+    },
+    "_comment_burst": "=== BURST 산탄 (특수) ===",
+    "flak_cannon": {
+      "id": "flak_cannon",
+      "displayName": "Flak Cannon",
+      "type": "weapon",
+      "category": "rapid",
+      "damage": 45,
+      "range": 165,
+      "attackSpeed": 0.84,
+      "projectileType": "burst",
+      "projectileSpeed": 380,
+      "splashRadius": 0,
+      "cost": 420,
+      "spriteName": "item_flak",
+      "description": "5발 산탄포. 부채꼴 발사."
+    },
+    "thunder_cannon": {
+      "id": "thunder_cannon",
+      "displayName": "Thunder Cannon",
+      "type": "weapon",
+      "category": "chain",
+      "damage": 180,
+      "range": 172,
+      "attackSpeed": 0.42,
+      "projectileType": "lightning",
+      "projectileSpeed": 500,
+      "splashRadius": 0,
+      "cost": 540,
+      "spriteName": "item_thunder",
+      "description": "번개 함포."
+    },
+    "iron_hull": {
+      "id": "iron_hull",
+      "displayName": "Iron Hull",
+      "type": "armor",
+      "armorBonus": 80,
+      "hpBonus": 0,
+      "effect": null,
+      "cost": 180,
+      "spriteName": "item_iron_hull",
+      "description": "철제 선체 강화."
+    },
+    "shield_generator": {
+      "id": "shield_generator",
+      "displayName": "Shield Generator",
+      "type": "armor",
+      "armorBonus": 0,
+      "hpBonus": 150,
+      "effect": "shield_on_hit",
+      "effectParams": {
+        "cooldown": 3,
+        "shieldDuration": 1.5
+      },
+      "cost": 300,
+      "spriteName": "item_shield",
+      "description": "피격 시 일시 방어막."
+    },
+    "repair_kit": {
+      "id": "repair_kit",
+      "displayName": "Repair Kit",
+      "type": "armor",
+      "armorBonus": 0,
+      "hpBonus": 0,
+      "effect": "regen",
+      "effectParams": {
+        "hpPerSecond": 5
+      },
+      "cost": 250,
+      "spriteName": "item_repair_kit",
+      "description": "초당 5 HP 회복."
+    },
+    "reflector": {
+      "id": "reflector",
+      "displayName": "Reflector",
+      "type": "armor",
+      "armorBonus": 50,
+      "hpBonus": 0,
+      "effect": "reflect",
+      "effectParams": {
+        "reflectPercent": 15
+      },
+      "cost": 350,
+      "spriteName": "item_reflector",
+      "description": "받은 피해의 15% 반사."
+    },
+    "speed_booster": {
+      "id": "speed_booster",
+      "displayName": "Speed Booster",
+      "type": "special",
+      "speedMultiplier": 1.5,
+      "cost": 200,
+      "spriteName": "item_speed",
+      "description": "이동속도 +50%."
+    },
+    "naval_engine": {
+      "id": "naval_engine",
+      "displayName": "Naval Engine",
+      "type": "special",
+      "speedMultiplier": 1.8,
+      "cost": 400,
+      "spriteName": "item_engine",
+      "description": "강화 함선 엔진. 이동속도 +80%."
+    },
+    "cruise_drive": {
+      "id": "cruise_drive",
+      "displayName": "Cruise Drive",
+      "type": "special",
+      "speedMultiplier": 2.2,
+      "cost": 700,
+      "spriteName": "item_cruise",
+      "description": "최고급 추진기. 이동속도 +120%."
+    },
+    "radar": {
+      "id": "radar",
+      "displayName": "Radar",
+      "type": "special",
+      "speedMultiplier": 1.0,
+      "cost": 300,
+      "spriteName": "item_radar",
+      "description": "시야 +50%, 스텔스 탐지."
+    }
+  },
+  "recipes": [
+    {
+      "id": "twin_cannon",
+      "displayName": "Twin Cannon",
+      "ingredients": [
+        "iron_cannon",
+        "iron_cannon"
+      ],
+      "resultItem": {
+        "type": "weapon",
+        "damage": 144,
+        "range": 202,
+        "attackSpeed": 0.9,
+        "projectileType": "normal",
+        "projectileSpeed": 420,
+        "splashRadius": 0,
+        "spriteName": "item_twin_cannon",
+        "description": "강화 쌍포."
+      }
+    }
+  ],
+  "economy": {
+    "startingGold": 500,
+    "creepKillGold": 50,
+    "shipKillGold": 200,
+    "passiveGoldPerInterval": 30,
+    "passiveGoldInterval": 10
+  },
+  "map": {
+    "worldWidth": 3000,
+    "worldHeight": 3000,
+    "safeZoneInitialRadius": 1350,
+    "safeZoneShrinkStart": 240,
+    "safeZoneShrinkInterval": 30,
+    "safeZoneShrinkAmount": 80,
+    "safeZoneDamagePerSecond": 20,
+    "creepSpawnInterval": 30,
+    "creepHp": 150,
+    "creepSpeed": 60
+  }
+}
