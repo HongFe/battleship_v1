@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "tsx server/index.ts",
     "deploy": "DEPLOY=gh-pages vite build && echo '배포 완료: dist/ 폴더를 GitHub Pages에 올려주세요'"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
   "description": "",
   "dependencies": {
     "phaser": "^3.90.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.5",
     "ws": "^8.20.0"
