@@ -6,10 +6,13 @@ import { LobbyScene } from '../scenes/LobbyScene';
 import { GameScene } from '../scenes/GameScene';
 import { UIScene } from '../scenes/UIScene';
 
+const vvW = () => window.visualViewport?.width ?? window.innerWidth;
+const vvH = () => window.visualViewport?.height ?? window.innerHeight;
+
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: vvW(),
+  height: vvH(),
   transparent: true,    // transparent so Three.js shows through
   parent: document.body,
   scale: {
