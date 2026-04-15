@@ -235,9 +235,21 @@ export class LobbyScene extends Phaser.Scene {
     this.titleInput = this.createHtmlInput(w / 2 - 120, h * 0.42 + 16, 240, 40, '함대 이름', 24);
 
     this.makeButton(w / 2, h * 0.65, 240, 56, 'CREATE', 0x3DC47E, () => {
+      if (!NetworkManager.connected) {
+        this.setStatus('서버 연결이 끊겼습니다. 새로고침 후 다시 시도하세요.');
+        return;
+      }
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
       const title = sanitize(this.titleInput?.value || '') || `${name}의 방`;
+      this.setStatus('방 만드는 중...');
       NetworkManager.createRoom(name, title);
+      // If server doesn't answer within 5 seconds, surface an error so the
+      // click doesn't look like a dead button.
+      this.time.delayedCall(5000, () => {
+        if (this.mode === 'create') {
+          this.setStatus('서버 응답 없음 — 새로고침 후 다시 시도하세요.');
+        }
+      });
     });
 
     this.makeButton(w / 2, h * 0.65 + 70, 240, 50, 'BACK', 0x666666, () => {
