@@ -11,7 +11,7 @@
       "slots": {
         "weapon": 1,
         "armor": 1,
-        "special": 1
+        "special": 0
       },
       "cost": 0,
       "spriteName": "ship_patrolboat_hq",
@@ -34,7 +34,7 @@
       "speed": 36,
       "armor": 12,
       "slots": {
-        "weapon": 2,
+        "weapon": 1,
         "armor": 1,
         "special": 1
       },
@@ -60,7 +60,7 @@
       "speed": 38,
       "armor": 14,
       "slots": {
-        "weapon": 2,
+        "weapon": 1,
         "armor": 1,
         "special": 1
       },
@@ -85,7 +85,7 @@
       "speed": 58,
       "armor": 12,
       "slots": {
-        "weapon": 2,
+        "weapon": 1,
         "armor": 1,
         "special": 1
       },
@@ -111,8 +111,8 @@
       "speed": 42,
       "armor": 22,
       "slots": {
-        "weapon": 3,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 1400,
@@ -137,8 +137,8 @@
       "speed": 48,
       "armor": 18,
       "slots": {
-        "weapon": 3,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 1500,
@@ -161,8 +161,8 @@
       "speed": 36,
       "armor": 26,
       "slots": {
-        "weapon": 4,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 1700,
@@ -185,8 +185,8 @@
       "speed": 38,
       "armor": 28,
       "slots": {
-        "weapon": 4,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 1900,
@@ -211,9 +211,9 @@
       "speed": 52,
       "armor": 18,
       "slots": {
-        "weapon": 3,
-        "armor": 2,
-        "special": 2
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
       },
       "cost": 2200,
       "spriteName": "ship_submarine_hq",
@@ -236,8 +236,8 @@
       "speed": 26,
       "armor": 42,
       "slots": {
-        "weapon": 5,
-        "armor": 3,
+        "weapon": 3,
+        "armor": 1,
         "special": 1
       },
       "cost": 2800,
@@ -260,8 +260,8 @@
       "speed": 32,
       "armor": 55,
       "slots": {
-        "weapon": 6,
-        "armor": 3,
+        "weapon": 3,
+        "armor": 1,
         "special": 1
       },
       "cost": 3300,
@@ -286,9 +286,9 @@
       "speed": 22,
       "armor": 45,
       "slots": {
-        "weapon": 4,
-        "armor": 4,
-        "special": 3
+        "weapon": 2,
+        "armor": 2,
+        "special": 1
       },
       "cost": 4500,
       "spriteName": "ship_carrier_hq",
@@ -310,9 +310,9 @@
       "speed": 22,
       "armor": 55,
       "slots": {
-        "weapon": 6,
-        "armor": 4,
-        "special": 2
+        "weapon": 3,
+        "armor": 2,
+        "special": 1
       },
       "cost": 5000,
       "spriteName": "ship_yamato_hq",
@@ -334,9 +334,9 @@
       "speed": 36,
       "armor": 38,
       "slots": {
-        "weapon": 5,
-        "armor": 3,
-        "special": 2
+        "weapon": 3,
+        "armor": 1,
+        "special": 1
       },
       "cost": 3200,
       "spriteName": "ship_iowa_hq",
@@ -358,9 +358,9 @@
       "speed": 38,
       "armor": 28,
       "slots": {
-        "weapon": 4,
+        "weapon": 2,
         "armor": 2,
-        "special": 2
+        "special": 1
       },
       "cost": 2500,
       "spriteName": "ship_hood_hq",
@@ -382,9 +382,9 @@
       "speed": 28,
       "armor": 40,
       "slots": {
-        "weapon": 3,
-        "armor": 4,
-        "special": 3
+        "weapon": 2,
+        "armor": 2,
+        "special": 2
       },
       "cost": 4800,
       "spriteName": "ship_akagi_hq",
@@ -406,9 +406,9 @@
       "speed": 30,
       "armor": 42,
       "slots": {
-        "weapon": 5,
-        "armor": 3,
-        "special": 2
+        "weapon": 2,
+        "armor": 2,
+        "special": 1
       },
       "cost": 3500,
       "spriteName": "ship_pyotr_hq",
@@ -430,9 +430,9 @@
       "speed": 60,
       "armor": 22,
       "slots": {
-        "weapon": 4,
-        "armor": 2,
-        "special": 2
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
       },
       "cost": 2400,
       "spriteName": "ship_blackpearl_hq",
@@ -455,9 +455,9 @@
       "speed": 38,
       "armor": 35,
       "slots": {
-        "weapon": 4,
-        "armor": 3,
-        "special": 2
+        "weapon": 2,
+        "armor": 2,
+        "special": 1
       },
       "cost": 3000,
       "spriteName": "ship_flyingdutchman_hq",
@@ -480,8 +480,8 @@
       "speed": 45,
       "armor": 26,
       "slots": {
-        "weapon": 5,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 2200,
@@ -504,9 +504,9 @@
       "speed": 20,
       "armor": 60,
       "slots": {
-        "weapon": 4,
-        "armor": 5,
-        "special": 3
+        "weapon": 2,
+        "armor": 3,
+        "special": 1
       },
       "cost": 6000,
       "spriteName": "ship_battleship_hq",
@@ -530,9 +530,9 @@
       "speed": 35,
       "armor": 30,
       "slots": {
-        "weapon": 5,
-        "armor": 3,
-        "special": 3
+        "weapon": 3,
+        "armor": 2,
+        "special": 1
       },
       "cost": 5500,
       "spriteName": "ship_battleship_hq",
@@ -556,9 +556,9 @@
       "speed": 55,
       "armor": 20,
       "slots": {
-        "weapon": 5,
-        "armor": 2,
-        "special": 4
+        "weapon": 3,
+        "armor": 1,
+        "special": 2
       },
       "cost": 5000,
       "spriteName": "ship_flyingdutchman_hq",
@@ -581,9 +581,9 @@
       "speed": 28,
       "armor": 35,
       "slots": {
-        "weapon": 6,
-        "armor": 3,
-        "special": 2
+        "weapon": 3,
+        "armor": 2,
+        "special": 1
       },
       "cost": 5800,
       "spriteName": "ship_battleship_hq",
@@ -605,9 +605,9 @@
       "speed": 40,
       "armor": 25,
       "slots": {
-        "weapon": 2,
-        "armor": 3,
-        "special": 2
+        "weapon": 1,
+        "armor": 2,
+        "special": 1
       },
       "cost": 1800,
       "spriteName": "ship_cruiser_hq",
@@ -631,9 +631,9 @@
       "speed": 30,
       "armor": 35,
       "slots": {
-        "weapon": 3,
-        "armor": 4,
-        "special": 3
+        "weapon": 2,
+        "armor": 2,
+        "special": 1
       },
       "cost": 4000,
       "spriteName": "ship_flyingdutchman_hq",
@@ -657,8 +657,8 @@
       "speed": 38,
       "armor": 22,
       "slots": {
-        "weapon": 4,
-        "armor": 2,
+        "weapon": 2,
+        "armor": 1,
         "special": 1
       },
       "cost": 1600,
@@ -683,9 +683,9 @@
       "speed": 42,
       "armor": 28,
       "slots": {
-        "weapon": 3,
-        "armor": 3,
-        "special": 2
+        "weapon": 2,
+        "armor": 1,
+        "special": 1
       },
       "cost": 2000,
       "spriteName": "ship_galleon_hq",

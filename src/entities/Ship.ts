@@ -886,7 +886,72 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.skillCooldown = skill.cooldown * (1 - this.skillCdReductPct);
+    this.spawnSkillFlash();
     return true;
+  }
+
+  /** Tier-scaled burst effect when a ship fires its signature skill.
+   * Higher tier ships get brighter, larger, longer-lingering auras. */
+  private spawnSkillFlash(): void {
+    const scene = this.scene as Phaser.Scene;
+    if (!scene) return;
+    const tier = this.config.tier ?? 1;
+    const baseR = 40 + tier * 18;
+    const flashColor = this.team === 0 ? 0x88DDFF : 0xFF9977;
+
+    // Core bright flash
+    const core = scene.add.graphics().setDepth(5).setBlendMode(Phaser.BlendModes.ADD);
+    core.fillStyle(0xFFFFFF, 0.9);
+    core.fillCircle(this.x, this.y, 14 + tier * 4);
+    scene.tweens.add({
+      targets: core, alpha: 0, duration: 260, ease: 'Cubic.Out',
+      onComplete: () => core.destroy(),
+    });
+
+    // Expanding rings — one per tier step
+    for (let i = 0; i < tier; i++) {
+      const ring = scene.add.graphics().setDepth(4).setBlendMode(Phaser.BlendModes.ADD);
+      const delay = i * 70;
+      ring.lineStyle(3, flashColor, 0.85);
+      ring.strokeCircle(this.x, this.y, 10);
+      scene.tweens.add({
+        targets: ring,
+        alpha: 0,
+        duration: 520,
+        delay,
+        ease: 'Cubic.Out',
+        onUpdate: (tw) => {
+          const p = tw.progress;
+          ring.clear();
+          ring.lineStyle(3, flashColor, 0.85 * (1 - p));
+          ring.strokeCircle(this.x, this.y, 10 + p * baseR);
+        },
+        onComplete: () => ring.destroy(),
+      });
+    }
+
+    // Sparks for tier 3+
+    if (tier >= 3) {
+      const sparkCount = 6 + tier * 2;
+      for (let i = 0; i < sparkCount; i++) {
+        const ang = (i / sparkCount) * Math.PI * 2 + Math.random() * 0.4;
+        const dist = baseR * 0.6 + Math.random() * 20;
+        const sx = this.x + Math.cos(ang) * 6;
+        const sy = this.y + Math.sin(ang) * 6;
+        const spark = scene.add.graphics().setDepth(5).setBlendMode(Phaser.BlendModes.ADD);
+        spark.fillStyle(flashColor, 0.95);
+        spark.fillCircle(sx, sy, 3);
+        scene.tweens.add({
+          targets: spark,
+          x: Math.cos(ang) * dist,
+          y: Math.sin(ang) * dist,
+          alpha: 0,
+          duration: 450 + Math.random() * 200,
+          ease: 'Cubic.Out',
+          onComplete: () => spark.destroy(),
+        });
+      }
+    }
   }
 
   destroy(fromScene?: boolean): void {

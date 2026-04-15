@@ -149,6 +149,9 @@ export class AutoAttackSystem {
       AudioManager.cannonFire();
     }
 
+    // Cost-tiered fancy muzzle flourish — expensive weapons get a bigger burst
+    this.spawnCostMuzzle(cannonPos.x, cannonPos.y, weapon);
+
     // Sniper tracer (any sniper-category weapon adds a bright instant tracer line)
     if (weapon.category === 'sniper') {
       this.spawnTracerLine(cannonPos.x, cannonPos.y, target.x, target.y, 0xCCEEFF);
@@ -206,6 +209,67 @@ export class AutoAttackSystem {
       weapon.projectileSpeed, weapon.damage,
       weapon.projectileType, weapon.splashRadius, ship.team, range, target,
     );
+  }
+
+  /** Expensive weapons get a bigger, lingering muzzle burst + shockwave ring.
+   *  cost < 400  -> nothing extra
+   *  cost 400-800 -> small ring
+   *  cost 800-1400 -> ring + bright core
+   *  cost 1400+   -> ring + core + radial sparks */
+  private spawnCostMuzzle(x: number, y: number, weapon: WeaponItemConfig): void {
+    const cost = weapon.cost ?? 0;
+    if (cost < 400) return;
+
+    const tierCol = cost >= 1400 ? 0xFFEE88
+      : cost >= 800 ? 0xCCEEFF
+      : 0xFFCC66;
+    const ringR = 18 + Math.min(30, cost / 60);
+
+    // Shockwave ring
+    const ring = this.scene.add.graphics().setDepth(6).setBlendMode(Phaser.BlendModes.ADD);
+    this.scene.tweens.add({
+      targets: ring, alpha: 0, duration: 380, ease: 'Cubic.Out',
+      onUpdate: (tw) => {
+        const p = tw.progress;
+        ring.clear();
+        ring.lineStyle(2.5, tierCol, 0.9 * (1 - p));
+        ring.strokeCircle(x, y, 6 + p * ringR);
+      },
+      onComplete: () => ring.destroy(),
+    });
+
+    // Bright core for mid+ tier
+    if (cost >= 800) {
+      const core = this.scene.add.image(x, y, 'glow')
+        .setDepth(7).setBlendMode(Phaser.BlendModes.ADD)
+        .setTint(tierCol).setScale(0.5);
+      this.scene.tweens.add({
+        targets: core, alpha: 0, scaleX: 1.4, scaleY: 1.4,
+        duration: 280, ease: 'Cubic.Out',
+        onComplete: () => core.destroy(),
+      });
+    }
+
+    // Radial sparks for top-tier
+    if (cost >= 1400) {
+      const count = 8;
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+        const dist = 26 + Math.random() * 18;
+        const sp = this.scene.add.graphics().setDepth(7).setBlendMode(Phaser.BlendModes.ADD);
+        sp.fillStyle(tierCol, 1);
+        sp.fillCircle(x, y, 2.5);
+        this.scene.tweens.add({
+          targets: sp,
+          x: Math.cos(ang) * dist,
+          y: Math.sin(ang) * dist,
+          alpha: 0,
+          duration: 340 + Math.random() * 140,
+          ease: 'Cubic.Out',
+          onComplete: () => sp.destroy(),
+        });
+      }
+    }
   }
 
   private spawnBeamFlash(x1: number, y1: number, x2: number, y2: number): void {
