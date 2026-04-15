@@ -546,7 +546,20 @@ export class GameScene extends Phaser.Scene {
         return;
       }
       if (this.player.gold < item.cost) {
-        EventBus.emit('toast', `❌ Not enough gold (need ${item.cost}g)`, '#E84545');
+        EventBus.emit('toast', `❌ 골드 부족 (${item.cost}g 필요)`, '#E84545');
+        return;
+      }
+      const reason = this.player.canEquipReason(item);
+      if (reason === 'weapons_full') {
+        EventBus.emit('toast', '❌ 무기 인벤토리가 꽉 찼어요 (기존 무기 판매 후 구매)', '#E84545');
+        return;
+      }
+      if (reason === 'armor_owned') {
+        EventBus.emit('toast', '❌ 방어구는 한 개만 장착 가능', '#E84545');
+        return;
+      }
+      if (reason === 'special_owned') {
+        EventBus.emit('toast', '❌ 특수 아이템은 한 개만 장착 가능', '#E84545');
         return;
       }
       const ok = this.player.equipItem(item);

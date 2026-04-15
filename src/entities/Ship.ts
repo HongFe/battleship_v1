@@ -301,28 +301,29 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
 
   /** Equip an item. If the relevant slot is full, replaces the oldest item.
    * Always succeeds (returns true) so buying is never silently blocked. */
-  equipItem(item: ItemConfig): boolean {
+  /** Reason string returned when a purchase is rejected so the UI can show a
+   *  specific message (full weapon slots vs. already-owned armor/special). */
+  canEquipReason(item: ItemConfig): null | 'weapons_full' | 'armor_owned' | 'special_owned' {
     const slots = this.config.slots;
+    if (item.type === 'weapon' && this.equippedWeapons.length >= slots.weapon) return 'weapons_full';
+    if (item.type === 'armor' && this.equippedArmors.length >= 1) return 'armor_owned';
+    if (item.type === 'special' && this.equippedSpecials.length >= 1) return 'special_owned';
+    return null;
+  }
+
+  equipItem(item: ItemConfig): boolean {
+    if (this.canEquipReason(item) !== null) return false;
     if (item.type === 'weapon') {
-      if (this.equippedWeapons.length >= slots.weapon) {
-        this.equippedWeapons.shift(); // drop oldest
-      }
       this.equippedWeapons.push(item as WeaponItemConfig);
       return true;
     }
     if (item.type === 'armor') {
-      if (this.equippedArmors.length >= slots.armor) {
-        this.equippedArmors.shift();
-      }
       this.equippedArmors.push(item as ArmorItemConfig);
       this.maxHp = this.config.hp + this.equippedArmors.reduce((s, a) => s + a.hpBonus, 0);
       this.currentHp = Math.min(this.currentHp + (item as ArmorItemConfig).hpBonus, this.maxHp);
       return true;
     }
     if (item.type === 'special') {
-      if (this.equippedSpecials.length >= slots.special) {
-        this.equippedSpecials.shift();
-      }
       this.equippedSpecials.push(item as SpecialItemConfig);
       return true;
     }
