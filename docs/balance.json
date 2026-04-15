@@ -1290,7 +1290,7 @@
     }
   ],
   "economy": {
-    "startingGold": 500,
+    "startingGold": 5000,
     "creepKillGold": 50,
     "shipKillGold": 200,
     "passiveGoldPerInterval": 30,

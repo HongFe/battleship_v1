@@ -726,7 +726,7 @@ export class UIScene extends Phaser.Scene {
   private createSkillButton(w: number, h: number): void {
     const btnSize = 64;
     const btnX = 18;
-    const btnY = h - btnSize - 75;
+    const btnY = h - btnSize - 150;
 
     this.skillButtonGfx = this.add.graphics().setScrollFactor(0).setDepth(100);
 
@@ -950,7 +950,7 @@ export class UIScene extends Phaser.Scene {
   private createShopButton(w: number, h: number): void {
     const btnSize = 56;
     const btnX = w - btnSize - 15;
-    const btnY = h - btnSize - 75;
+    const btnY = h - btnSize - 150;
 
     const g = this.add.graphics().setScrollFactor(0).setDepth(100);
     g.fillStyle(0xF5A623, 1);

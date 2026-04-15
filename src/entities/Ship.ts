@@ -5,6 +5,13 @@ import { EventBus } from '../utils/EventBus';
 
 let __shipIdCounter = 1;
 
+// NPC-only range nerf: strong AI ships fire from 70% of base weapon range
+// so they don't overwhelm the player with kiting sniper fire.
+const STRONG_NPC_SHIPS = new Set([
+  'battleship', 'iowa', 'yamato', 'hood', 'akagi', 'carrier',
+  'turtleship', 'kraken', 'thundership', 'phoenix', 'pyotr', 'ghostship',
+]);
+
 export class Ship extends Phaser.Physics.Arcade.Sprite {
   public config: ShipConfig;
   public currentHp: number;
@@ -230,7 +237,9 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
 
   get maxRange(): number {
     if (this.equippedWeapons.length === 0) return 0;
-    return Math.max(...this.equippedWeapons.map(w => w.range));
+    const base = Math.max(...this.equippedWeapons.map(w => w.range));
+    if (this.isBot && STRONG_NPC_SHIPS.has(this.config.id)) return base * 0.7;
+    return base;
   }
 
   get turnRate(): number {

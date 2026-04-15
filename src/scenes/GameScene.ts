@@ -304,13 +304,13 @@ export class GameScene extends Phaser.Scene {
     // Lane waves stay mid-tier; titan-class ships (battleship/carrier/yamato/turtleship)
     // are gated to the 5-minute titan spawn instead of flooding lanes.
     const ships: ShipId[] = wave <= 1
-      ? ['patrolboat', 'patrolboat', 'destroyer']
+      ? ['patrolboat', 'patrolboat', 'patrolboat', 'patrolboat', 'destroyer']
       : wave <= 2
-      ? ['patrolboat', 'destroyer', 'destroyer', 'trireme', 'viking']
+      ? ['patrolboat', 'patrolboat', 'destroyer', 'destroyer', 'trireme', 'viking']
       : wave <= 4
-      ? ['destroyer', 'destroyer', 'cruiser', 'pirate']
+      ? ['patrolboat', 'destroyer', 'destroyer', 'cruiser', 'pirate']
       : wave <= 6
-      ? ['cruiser', 'submarine', 'pirate', 'galleon']
+      ? ['destroyer', 'cruiser', 'submarine', 'pirate', 'galleon']
       : wave <= 8
       ? ['cruiser', 'submarine', 'galleon', 'panokseon']
       : ['cruiser', 'cruiser', 'submarine', 'galleon', 'panokseon'];

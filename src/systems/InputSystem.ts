@@ -50,7 +50,7 @@ export class InputSystem {
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
     const cx = w - 90;
-    const cy = h - 130;
+    const cy = h - 205;
     const r = 50;
     const g = this.joystickHint;
     g.clear();
