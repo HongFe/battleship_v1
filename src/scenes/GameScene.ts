@@ -95,10 +95,10 @@ export class GameScene extends Phaser.Scene {
   // Wave system
   public waveNumber: number = 1;
   private waveTimer: number = 0;
-  private readonly WAVE_INTERVAL = 22;
-  // Titan (super-ship) system — slow capital ships from each base every 5 min
-  private titanTimer: number = 0;
-  private readonly TITAN_INTERVAL = 300;
+  private readonly WAVE_INTERVAL = 30;
+  // Titan (super-ship) system — escalating strength at fixed match times
+  private elapsed: number = 0;        // total seconds since start
+  private titanStage: number = 0;     // 0: before 60s, 1: 60s, 2: 300s, 3: 600s
   private readonly TITAN_SPEED_MUL = 0.5;
 
   // Game state
@@ -144,7 +144,8 @@ export class GameScene extends Phaser.Scene {
     this.waves = [];
     this.waveNumber = 1;
     this.waveTimer = 0;
-    this.titanTimer = 0;
+    this.elapsed = 0;
+    this.titanStage = 0;
     this.isMultiplayer = !!data.multiplayer;
     this.remoteShips = new Map();
     this.remoteTargets = new Map();
@@ -197,8 +198,9 @@ export class GameScene extends Phaser.Scene {
     const mapW = this.balance.map.worldWidth;
     const mapH = this.balance.map.worldHeight;
 
-    // Create a ship for each room player
-    // Place team 0 on left, team 1 on right
+    // Create a ship for each room player.
+    // Place team 0 on BOTTOM, team 1 on TOP so MP mirrors the single-player
+    // north/south layout the AI systems are tuned around.
     const team0Players = room.players.filter(p => p.team === 0);
     const team1Players = room.players.filter(p => p.team === 1);
 
@@ -206,8 +208,8 @@ export class GameScene extends Phaser.Scene {
     const myTeam = me ? me.team : 0;
 
     const placePlayer = (p: any, team: number, idx: number, total: number) => {
-      const baseX = team === 0 ? mapW * 0.25 : mapW * 0.75;
-      const baseY = mapH * (0.35 + (total > 1 ? idx * 0.3 : 0));
+      const baseY = team === 0 ? mapH * 0.80 : mapH * 0.20;
+      const baseX = mapW * (0.35 + (total > 1 ? idx * 0.3 : 0.15));
       const spawn = this.findSafeSpawn(baseX, baseY, mapW, mapH);
       const cfg = this.balance.ships[p.shipId as ShipId];
       const isMe = p.id === NetworkManager.playerId;
@@ -315,31 +317,39 @@ export class GameScene extends Phaser.Scene {
 
     // Lane waves stay mid-tier; titan-class ships (battleship/carrier/yamato/turtleship)
     // are gated to the 5-minute titan spawn instead of flooding lanes.
-    const ships: ShipId[] = wave <= 1
-      ? ['patrolboat', 'patrolboat', 'patrolboat', 'patrolboat', 'destroyer']
-      : wave <= 2
-      ? ['patrolboat', 'patrolboat', 'destroyer', 'destroyer', 'trireme', 'viking']
-      : wave <= 4
-      ? ['patrolboat', 'destroyer', 'destroyer', 'cruiser', 'pirate']
-      : wave <= 6
-      ? ['destroyer', 'cruiser', 'submarine', 'pirate', 'galleon']
-      : wave <= 8
-      ? ['cruiser', 'submarine', 'galleon', 'panokseon']
-      : ['cruiser', 'cruiser', 'submarine', 'galleon', 'panokseon'];
+    // Fixed composition per wave: mostly small ships + a couple mediums.
+    // spawnAllyWave() uses a separate helper for the 10-small-1-medium pattern.
+    const ships: ShipId[] = [
+      'patrolboat', 'patrolboat', 'destroyer', 'destroyer', 'trireme', 'viking',
+      'cruiser', 'pirate',
+    ];
 
     return { weapons, ships };
   }
 
-  private spawnAllyWave(count: number): void {
+  /** Fixed spawn recipe each wave: 10 small + 1 medium per side. */
+  private pickWaveShips(): ShipId[] {
+    const smalls: ShipId[] = ['patrolboat', 'patrolboat', 'destroyer', 'trireme', 'viking'];
+    const mediums: ShipId[] = ['cruiser', 'pirate', 'submarine', 'galleon'];
+    const out: ShipId[] = [];
+    for (let i = 0; i < 10; i++) {
+      out.push(smalls[Phaser.Math.Between(0, smalls.length - 1)]);
+    }
+    out.push(mediums[Phaser.Math.Between(0, mediums.length - 1)]);
+    return out;
+  }
+
+  private spawnAllyWave(_count: number): void {
     const mapW = this.balance.map.worldWidth;
     const mapH = this.balance.map.worldHeight;
-    const { weapons, ships } = this.getWavePools();
+    const { weapons } = this.getWavePools();
+    const ships = this.pickWaveShips();
 
     const baseX = this.playerNexus?.x ?? mapW / 2;
     const baseY = this.playerNexus?.y ?? mapH * 0.85;
 
-    for (let i = 0; i < count; i++) {
-      const shipId = ships[Phaser.Math.Between(0, ships.length - 1)];
+    for (let i = 0; i < ships.length; i++) {
+      const shipId = ships[i];
       const cfg = this.balance.ships[shipId];
       const sx = baseX + Phaser.Math.Between(-200, 200);
       const sy = baseY - 100 + Phaser.Math.Between(-50, 50);
@@ -364,13 +374,20 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Spawn one slow super-ship from each base (5-min cadence). */
-  private spawnTitans(): void {
+  /** Spawn one slow super-ship from each base. Stage 1 = 1min (strong),
+   *  stage 2 = 5min (stronger), stage 3 = 10min (strongest). */
+  private spawnTitans(stage: number = 3): void {
     const mapW = this.balance.map.worldWidth;
     const mapH = this.balance.map.worldHeight;
     const { weapons } = this.getWavePools();
-    const allyPool: ShipId[] = ['battleship', 'turtleship'];
-    const enemyPool: ShipId[] = ['yamato', 'carrier'];
+    const tierPools: { ally: ShipId[]; enemy: ShipId[] }[] = [
+      { ally: ['battleship', 'hood'],        enemy: ['battleship', 'hood'] },       // stage 1
+      { ally: ['iowa', 'turtleship'],        enemy: ['pyotr', 'akagi'] },            // stage 2
+      { ally: ['yamato', 'kraken', 'phoenix'], enemy: ['yamato', 'kraken', 'phoenix', 'thundership'] }, // stage 3
+    ];
+    const chosen = tierPools[Math.max(0, Math.min(stage - 1, tierPools.length - 1))];
+    const allyPool = chosen.ally;
+    const enemyPool = chosen.enemy;
 
     const mkTitan = (shipId: ShipId, team: 0 | 1, baseX: number, baseY: number, heading: number) => {
       const raw = this.balance.ships[shipId];
@@ -405,17 +422,18 @@ export class GameScene extends Phaser.Scene {
     EventBus.emit('toast', '⚓ Titan ship deployed', '#FFD24D');
   }
 
-  private spawnEnemyWave(count: number): void {
+  private spawnEnemyWave(_count: number): void {
     const mapW = this.balance.map.worldWidth;
     const mapH = this.balance.map.worldHeight;
-    const { weapons: pool, ships: shipPool } = this.getWavePools();
+    const { weapons: pool } = this.getWavePools();
+    const shipPool = this.pickWaveShips();
 
     // Spawn near enemy base (top)
     const baseX = this.enemyNexus?.x ?? mapW / 2;
     const baseY = this.enemyNexus?.y ?? mapH * 0.15;
 
-    for (let i = 0; i < count; i++) {
-      const shipId = shipPool[Phaser.Math.Between(0, shipPool.length - 1)];
+    for (let i = 0; i < shipPool.length; i++) {
+      const shipId = shipPool[i];
       const cfg = this.balance.ships[shipId];
       const ex = baseX + Phaser.Math.Between(-220, 220);
       const ey = baseY + 100 + Phaser.Math.Between(-50, 80);
@@ -508,7 +526,9 @@ export class GameScene extends Phaser.Scene {
 
     this.spawnCreeps();
     this.spawnTreasures();
-    this.spawnPirateFleet();
+    // Roaming pirates only in single-player — in multiplayer their flanking
+    // spawns muddled the top/bottom team layout.
+    if (!this.isMultiplayer) this.spawnPirateFleet();
     this.scene.launch('UIScene');
     this.cameras.main.fadeIn(500);
 
@@ -1243,11 +1263,12 @@ export class GameScene extends Phaser.Scene {
         EventBus.emit('wave-spawned', this.waveNumber);
       }
 
-      // Titan cadence — independent 5-minute timer
-      this.titanTimer += delta / 1000;
-      if (this.titanTimer >= this.TITAN_INTERVAL) {
-        this.titanTimer = 0;
-        this.spawnTitans();
+      // Staged titan spawns at 1 / 5 / 10 minutes
+      this.elapsed += delta / 1000;
+      const thresholds = [60, 300, 600];
+      while (this.titanStage < thresholds.length && this.elapsed >= thresholds[this.titanStage]) {
+        this.titanStage++;
+        this.spawnTitans(this.titanStage);
       }
     }
 

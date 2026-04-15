@@ -12,6 +12,13 @@ const STRONG_NPC_SHIPS = new Set([
   'turtleship', 'kraken', 'thundership', 'phoenix', 'pyotr', 'ghostship',
 ]);
 
+// Some hand-painted ship textures aren't drawn pointing up. Apply a
+// per-ship rotation offset (in radians) so forward == heading direction.
+const SHIP_SPRITE_ROT_OFFSET: Record<string, number> = {
+  pirate: Math.PI,          // bow drawn at bottom
+  panokseon: Math.PI / 2,   // drawn broadside (horizontal)
+};
+
 export class Ship extends Phaser.Physics.Arcade.Sprite {
   public config: ShipConfig;
   public currentHp: number;
@@ -439,9 +446,9 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     body.velocity.x += (targetVx - body.velocity.x) * factor;
     body.velocity.y += (targetVy - body.velocity.y) * factor;
 
-    // Generate wake when moving
+    // Wake particles disabled — testers found the dot spray distracting.
     const speed = body.velocity.length();
-    if (speed > 15) {
+    if (false && speed > 15) {
       const wakeDist = this.hullLength * 0.5;
       this.wakeParticles.push({
         x: this.x - Math.cos(this.heading) * wakeDist,
@@ -472,7 +479,9 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
 
     // Sprite renders itself; just rotate it.
     // Sprite art points UP, Phaser rotation 0 = right, so add PI/2.
-    const rot = this.heading + Math.PI / 2;
+    // Some ships have per-sprite orientation fixes.
+    const extraRot = SHIP_SPRITE_ROT_OFFSET[this.config.id] ?? 0;
+    const rot = this.heading + Math.PI / 2 + extraRot;
     this.setRotation(rot);
 
     // Sync shadow & rim light
@@ -481,7 +490,9 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     this.rimLight.setPosition(this.x - 1, this.y - 2);
     this.rimLight.setRotation(rot);
 
-    this.drawWake(delta);
+    // Wake particles removed — previous dot spray was visually noisy
+    // and unpopular with testers. Keep the update call shape in case
+    // we want to reintroduce a subtle trail later.
     this.drawOverlay();
 
     // Health bar above ship
