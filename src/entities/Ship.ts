@@ -486,7 +486,17 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     // Sprite art points UP, Phaser rotation 0 = right, so add PI/2.
     // Some ships have per-sprite orientation fixes.
     const extraRot = SHIP_SPRITE_ROT_OFFSET[this.config.id] ?? 0;
-    const rot = this.heading + Math.PI / 2 + extraRot;
+    // Kraken tentacle sway — subtle rotation wobble while moving, so the
+    // creature feels alive rather than sliding stiffly.
+    let wobble = 0;
+    if (this.config.id === 'kraken') {
+      const speed = (this.body as Phaser.Physics.Arcade.Body)?.velocity.length() ?? 0;
+      const intensity = Math.min(speed / 60, 1);
+      wobble = Math.sin(this.scene.time.now * 0.006) * 0.12 * intensity;
+      const pulse = 1 + Math.sin(this.scene.time.now * 0.008) * 0.035 * intensity;
+      this.setScale(pulse);
+    }
+    const rot = this.heading + Math.PI / 2 + extraRot + wobble;
     this.setRotation(rot);
 
     // Sync shadow & rim light
@@ -865,6 +875,13 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     const baseHp = this.config.hp;
     const armorHp = this.equippedArmors.reduce((s, a) => s + a.hpBonus, 0);
     this.maxHp = Math.floor((baseHp + armorHp) * (1 + this.hpBonusPct));
+  }
+
+  /** Override the text label above the ship — used in multiplayer so each
+   *  ship shows its owning player's captain name instead of a generic tag. */
+  setDisplayName(name: string): void {
+    if (!name) return;
+    this.nameText.setText(name);
   }
 
   /** Toggle this ship's visibility based on the viewer team's fog of war.

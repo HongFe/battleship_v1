@@ -9,7 +9,7 @@
       "speed": 70,
       "armor": 5,
       "slots": {
-        "weapon": 1,
+        "weapon": 2,
         "armor": 1,
         "special": 0
       },
@@ -34,7 +34,7 @@
       "speed": 36,
       "armor": 12,
       "slots": {
-        "weapon": 1,
+        "weapon": 2,
         "armor": 1,
         "special": 1
       },
@@ -60,7 +60,7 @@
       "speed": 38,
       "armor": 14,
       "slots": {
-        "weapon": 1,
+        "weapon": 2,
         "armor": 1,
         "special": 1
       },
@@ -85,7 +85,7 @@
       "speed": 58,
       "armor": 12,
       "slots": {
-        "weapon": 1,
+        "weapon": 2,
         "armor": 1,
         "special": 1
       },
@@ -111,7 +111,7 @@
       "speed": 42,
       "armor": 22,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -137,7 +137,7 @@
       "speed": 48,
       "armor": 18,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -161,7 +161,7 @@
       "speed": 36,
       "armor": 26,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -185,7 +185,7 @@
       "speed": 38,
       "armor": 28,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -211,7 +211,7 @@
       "speed": 52,
       "armor": 18,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -286,7 +286,7 @@
       "speed": 22,
       "armor": 45,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -310,7 +310,7 @@
       "speed": 22,
       "armor": 55,
       "slots": {
-        "weapon": 3,
+        "weapon": 4,
         "armor": 2,
         "special": 1
       },
@@ -358,7 +358,7 @@
       "speed": 38,
       "armor": 28,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -382,7 +382,7 @@
       "speed": 28,
       "armor": 40,
       "slots": {
-        "weapon": 2,
+        "weapon": 4,
         "armor": 2,
         "special": 2
       },
@@ -406,7 +406,7 @@
       "speed": 30,
       "armor": 42,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -430,7 +430,7 @@
       "speed": 60,
       "armor": 22,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -455,7 +455,7 @@
       "speed": 38,
       "armor": 35,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -480,7 +480,7 @@
       "speed": 45,
       "armor": 26,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -504,7 +504,7 @@
       "speed": 20,
       "armor": 60,
       "slots": {
-        "weapon": 2,
+        "weapon": 4,
         "armor": 3,
         "special": 1
       },
@@ -530,7 +530,7 @@
       "speed": 35,
       "armor": 30,
       "slots": {
-        "weapon": 3,
+        "weapon": 4,
         "armor": 2,
         "special": 1
       },
@@ -556,7 +556,7 @@
       "speed": 55,
       "armor": 20,
       "slots": {
-        "weapon": 3,
+        "weapon": 4,
         "armor": 1,
         "special": 2
       },
@@ -581,7 +581,7 @@
       "speed": 28,
       "armor": 35,
       "slots": {
-        "weapon": 3,
+        "weapon": 4,
         "armor": 2,
         "special": 1
       },
@@ -605,7 +605,7 @@
       "speed": 40,
       "armor": 25,
       "slots": {
-        "weapon": 1,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -631,7 +631,7 @@
       "speed": 30,
       "armor": 35,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 2,
         "special": 1
       },
@@ -657,7 +657,7 @@
       "speed": 38,
       "armor": 22,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -683,7 +683,7 @@
       "speed": 42,
       "armor": 28,
       "slots": {
-        "weapon": 2,
+        "weapon": 3,
         "armor": 1,
         "special": 1
       },
@@ -1303,7 +1303,7 @@
     "safeZoneShrinkStart": 240,
     "safeZoneShrinkInterval": 30,
     "safeZoneShrinkAmount": 80,
-    "safeZoneDamagePerSecond": 20,
+    "safeZoneDamagePerSecond": 0,
     "creepSpawnInterval": 30,
     "creepHp": 150,
     "creepSpeed": 60

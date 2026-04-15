@@ -217,6 +217,9 @@ export class GameScene extends Phaser.Scene {
       ship.netPlayerId = p.id;
       ship.isRemoteOwned = !isMe;
       ship.gold = this.balance.economy.startingGold;
+      // Show the captain's name above the ship in multiplayer so teammates
+      // can identify who is who on the battlefield.
+      ship.setDisplayName(p.name || (isMe ? 'You' : 'Player'));
       ship.equipItem(this.balance.items['rapid_gun'] as WeaponItemConfig);
       // Face center
       ship.heading = Phaser.Math.Angle.Between(spawn.x, spawn.y, mapW / 2, mapH / 2);
