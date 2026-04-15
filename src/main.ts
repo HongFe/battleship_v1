@@ -17,9 +17,11 @@ async function start() {
     const h = window.visualViewport?.height ?? window.innerHeight;
     game.scale.resize(w, h);
     // Scenes read this.scale.height at create(); restart active gameplay
-    // scenes so bottom-anchored HUD/shop/controls re-layout to the new size.
+    // scenes so bottom-anchored HUD/controls re-layout to the new size.
+    // Skip LobbyScene — its HTML inputs lose focus/value if destroyed mid-typing
+    // when the mobile keyboard opens and triggers this resize.
     const mgr = game.scene;
-    ['UIScene', 'LobbyScene'].forEach(key => {
+    ['UIScene'].forEach(key => {
       const s = mgr.getScene(key);
       if (s && mgr.isActive(key)) mgr.getScene(key).scene.restart();
     });

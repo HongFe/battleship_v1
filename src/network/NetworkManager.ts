@@ -14,6 +14,8 @@ export interface RoomData {
   state: 'waiting' | 'playing';
   seed: number;
   players: RoomPlayer[];
+  title?: string;
+  hasPassword?: boolean;
 }
 
 export interface RoomSummary {
@@ -21,6 +23,8 @@ export interface RoomSummary {
   hostName: string;
   playerCount: number;
   maxPlayers: number;
+  title?: string;
+  hasPassword?: boolean;
 }
 
 export interface RemotePlayerState {
@@ -130,14 +134,14 @@ class NetworkManagerClass extends Phaser.Events.EventEmitter {
     }
   }
 
-  createRoom(name: string): void {
+  createRoom(name: string, title?: string, password?: string): void {
     this.playerName = name;
-    this.send({ type: 'create_room', name });
+    this.send({ type: 'create_room', name, title, password });
   }
 
-  joinRoom(roomId: string, name: string): void {
+  joinRoom(roomId: string, name: string, password?: string): void {
     this.playerName = name;
-    this.send({ type: 'join_room', roomId, name });
+    this.send({ type: 'join_room', roomId, name, password });
   }
 
   listRooms(): void {

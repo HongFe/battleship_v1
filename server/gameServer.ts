@@ -16,6 +16,23 @@ interface Room {
   players: Map<string, Player>;
   state: 'waiting' | 'playing';
   seed: number;
+  title: string;
+  password?: string;   // empty / undefined = public room
+}
+
+/** Trim and keep only printable ASCII + Hangul; cap length */
+function sanitizeTitle(raw: string): string {
+  return (raw || '')
+    .replace(/[<>&"'/\\]/g, '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, 24) || '이름없는 함대';
+}
+
+function sanitizePassword(raw: string): string {
+  return (raw || '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .slice(0, 16);
 }
 
 const rooms = new Map<string, Room>();
@@ -55,6 +72,8 @@ function publicRoom(room: Room) {
     hostId: room.hostId,
     state: room.state,
     seed: room.seed,
+    title: room.title,
+    hasPassword: !!room.password,
     players: Array.from(room.players.values()).map(publicPlayer),
   };
 }
@@ -271,12 +290,16 @@ export function setupGameServer(wss: WebSocketServer) {
         case 'create_room': {
           if (currentRoom) return;
           const roomId = generateRoomId();
+          const title = sanitizeTitle(msg.title);
+          const password = sanitizePassword(msg.password);
           const room: Room = {
             id: roomId,
             hostId: playerId,
             players: new Map(),
             state: 'waiting',
             seed: 0,
+            title,
+            password: password || undefined,
           };
           rooms.set(roomId, room);
 
@@ -313,6 +336,13 @@ export function setupGameServer(wss: WebSocketServer) {
           if (room.state !== 'waiting') {
             send(ws, { type: 'join_failed', reason: '게임이 이미 진행 중입니다' });
             return;
+          }
+          if (room.password) {
+            const given = sanitizePassword(msg.password);
+            if (given !== room.password) {
+              send(ws, { type: 'join_failed', reason: '암호가 일치하지 않습니다' });
+              return;
+            }
           }
 
           player = {
@@ -399,6 +429,8 @@ export function setupGameServer(wss: WebSocketServer) {
                 hostName: host?.name ?? 'Host',
                 playerCount: r.players.size,
                 maxPlayers: 4,
+                title: r.title,
+                hasPassword: !!r.password,
               };
             })
             .slice(0, 50);

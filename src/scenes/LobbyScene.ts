@@ -13,6 +13,8 @@ export class LobbyScene extends Phaser.Scene {
   private mode: Mode = 'connecting';
   private nameInput: HTMLInputElement | null = null;
   private roomInput: HTMLInputElement | null = null;
+  private titleInput: HTMLInputElement | null = null;
+  private passwordInput: HTMLInputElement | null = null;
   private statusText!: Phaser.GameObjects.Text;
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private htmlElements: HTMLElement[] = [];
@@ -186,6 +188,8 @@ export class LobbyScene extends Phaser.Scene {
     this.htmlElements = [];
     this.nameInput = null;
     this.roomInput = null;
+    this.titleInput = null;
+    this.passwordInput = null;
   }
 
   private addUI(obj: Phaser.GameObjects.GameObject): void {
@@ -221,20 +225,30 @@ export class LobbyScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    this.addUI(this.add.text(w / 2, h * 0.25, 'ENTER YOUR NAME', {
-      fontSize: '18px',
-      fontFamily: 'monospace',
-      color: '#E8F4FF',
+    const label = (y: number, txt: string) => this.addUI(this.add.text(w / 2, y, txt, {
+      fontSize: '13px', fontFamily: 'monospace', color: '#8BA8CC',
     }).setOrigin(0.5));
 
-    this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.35, 240, 40, 'Captain', 16);
+    // Captain name
+    label(h * 0.18, 'CAPTAIN NAME');
+    this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.18 + 16, 240, 36, 'Captain', 16);
 
-    this.makeButton(w / 2, h * 0.5, 240, 56, 'CREATE', 0x3DC47E, () => {
+    // Room title
+    label(h * 0.33, 'ROOM TITLE');
+    this.titleInput = this.createHtmlInput(w / 2 - 120, h * 0.33 + 16, 240, 36, '함대 이름', 24);
+
+    // Password (optional)
+    label(h * 0.48, 'PASSWORD (비워두면 공개)');
+    this.passwordInput = this.createHtmlInput(w / 2 - 120, h * 0.48 + 16, 240, 36, '선택 입력', 16);
+
+    this.makeButton(w / 2, h * 0.65, 240, 56, 'CREATE', 0x3DC47E, () => {
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
-      NetworkManager.createRoom(name);
+      const title = sanitize(this.titleInput?.value || '') || `${name}의 방`;
+      const password = (this.passwordInput?.value || '').trim();
+      NetworkManager.createRoom(name, title, password || undefined);
     });
 
-    this.makeButton(w / 2, h * 0.5 + 70, 240, 50, 'BACK', 0x666666, () => {
+    this.makeButton(w / 2, h * 0.65 + 70, 240, 50, 'BACK', 0x666666, () => {
       this.setMode('menu');
     });
   }
@@ -299,19 +313,29 @@ export class LobbyScene extends Phaser.Scene {
         rowBg.strokeRoundedRect(listX + 10, ry, listW - 20, rowH - 6, 6);
         this.addUI(rowBg);
 
-        // Room code
-        this.addUI(this.add.text(listX + 24, ry + rowH / 2 - 3, r.id, {
-          fontSize: '18px',
+        // Room code (small, top-left)
+        this.addUI(this.add.text(listX + 24, ry + 6, r.id, {
+          fontSize: '11px',
           fontFamily: 'monospace',
           color: '#FFD700',
           fontStyle: 'bold',
-        }).setOrigin(0, 0.5));
+        }).setOrigin(0, 0));
 
-        // Host name
-        this.addUI(this.add.text(listX + 110, ry + rowH / 2 - 3, `★ ${r.hostName}`, {
-          fontSize: '12px',
+        // Title + lock icon (large, center-left)
+        const lock = r.hasPassword ? '🔒 ' : '';
+        const titleText = r.title || '함대';
+        this.addUI(this.add.text(listX + 70, ry + rowH / 2 - 3, `${lock}${titleText}`, {
+          fontSize: '14px',
           fontFamily: 'monospace',
           color: '#E8F4FF',
+          fontStyle: 'bold',
+        }).setOrigin(0, 0.5));
+
+        // Host name (small, below title)
+        this.addUI(this.add.text(listX + 70, ry + rowH - 12, `★ ${r.hostName}`, {
+          fontSize: '10px',
+          fontFamily: 'monospace',
+          color: '#8BA8CC',
         }).setOrigin(0, 0.5));
 
         // Player count
@@ -343,7 +367,13 @@ export class LobbyScene extends Phaser.Scene {
           .setInteractive({ useHandCursor: true });
         hit.on('pointerdown', () => {
           const name = sanitize(this.nameInput?.value || '') || 'Captain';
-          NetworkManager.joinRoom(r.id, name);
+          if (r.hasPassword) {
+            const pw = (window.prompt('방 암호를 입력하세요') || '').trim();
+            if (!pw) return;
+            NetworkManager.joinRoom(r.id, name, pw);
+          } else {
+            NetworkManager.joinRoom(r.id, name);
+          }
         });
         this.addUI(hit);
       });
@@ -390,17 +420,23 @@ export class LobbyScene extends Phaser.Scene {
 
     this.roomInput = this.createHtmlInput(w / 2 - 120, h * 0.45, 240, 50, 'XXXX', 4, true);
 
-    this.makeButton(w / 2, h * 0.6, 240, 56, 'JOIN', 0x4A9ECC, () => {
+    this.addUI(this.add.text(w / 2, h * 0.58, 'PASSWORD (암호방이면 입력)', {
+      fontSize: '11px', fontFamily: 'monospace', color: '#8BA8CC',
+    }).setOrigin(0.5));
+    this.passwordInput = this.createHtmlInput(w / 2 - 120, h * 0.58 + 14, 240, 34, '선택 입력', 16);
+
+    this.makeButton(w / 2, h * 0.75, 240, 56, 'JOIN', 0x4A9ECC, () => {
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
       const roomId = sanitize(this.roomInput?.value || '').toUpperCase();
       if (!/^[A-Z0-9]{4}$/.test(roomId)) {
         this.setStatus('방 코드 4자리를 입력하세요');
         return;
       }
-      NetworkManager.joinRoom(roomId, name);
+      const pw = (this.passwordInput?.value || '').trim();
+      NetworkManager.joinRoom(roomId, name, pw || undefined);
     });
 
-    this.makeButton(w / 2, h * 0.6 + 70, 240, 50, 'BACK', 0x666666, () => {
+    this.makeButton(w / 2, h * 0.75 + 70, 240, 50, 'BACK', 0x666666, () => {
       this.setMode('menu');
     });
   }
