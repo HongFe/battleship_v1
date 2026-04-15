@@ -58,6 +58,27 @@ export class BootScene extends Phaser.Scene {
 
     // UI
     this.load.image('crosshair', `${T}/ui/crosshair.png`);
+
+    // === AI-generated top-down ship PNGs (Whisk-sourced) ===
+    // Loaded under key `ship_gen_{id}`. Shop + gameplay prefer these when present;
+    // missing files silently fall back to the procedural ship_*_hq sprites.
+    const genIds = [
+      'patrolboat', 'destroyer', 'cruiser', 'battleship', 'carrier', 'submarine',
+      'yamato', 'iowa', 'hood', 'akagi', 'pyotr', 'turtleship', 'panokseon',
+      'galleon', 'trireme', 'viking', 'pirate',
+      'kraken', 'phoenix', 'ghostship', 'thundership',
+      'medic', 'seawitch',
+    ];
+    for (const id of genIds) {
+      this.load.image(`ship_gen_${id}`, `${T}/ships_gen/${id}.png`);
+    }
+
+    // AI-generated weapon/equipment icons (Whisk-sourced).
+    // Loaded as `weapon_gen_{cat}`; shop prefers these over procedural icons.
+    const weaponCats = ['sniper', 'rapid', 'splash', 'pierce', 'homing', 'chain', 'flame', 'beam', 'armor', 'special'];
+    for (const cat of weaponCats) {
+      this.load.image(`weapon_gen_${cat}`, `${T}/weapons_gen/${cat}.png`);
+    }
   }
 
   create(): void {

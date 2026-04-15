@@ -68,8 +68,13 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     team: number,
     isBot: boolean = false,
   ) {
-    // Use real sprite based on ship config (allows reusing sprites across types)
-    const spriteKey = config.spriteName || `ship_${config.id}`;
+    // Prefer the Whisk-generated top-down PNG (public/textures/ships_gen/*.png,
+    // preloaded in BootScene as `ship_gen_{id}`) when available; otherwise
+    // fall back to the procedural HQ sprite from balance.json.
+    const genKey = `ship_gen_${config.id}`;
+    const spriteKey = scene.textures.exists(genKey)
+      ? genKey
+      : (config.spriteName || `ship_${config.id}`);
     super(scene, x, y, spriteKey);
     this.config = config;
     this.currentHp = config.hp;
@@ -128,6 +133,11 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     const isHistorical = ['turtleship', 'panokseon', 'galleon', 'pirate', 'viking', 'trireme'].includes(config.id);
     if (isHistorical) {
       tintBase = team === 0 ? 0xDDEEFF : 0xFFDDDD;
+    }
+    // Whisk-painted sprites already carry rich hand-painted color — apply only
+    // the faintest team hint so reds still read as friendly/enemy.
+    if (spriteKey === genKey) {
+      tintBase = team === 0 ? 0xEAF2FF : 0xFFEAEA;
     }
     this.setTint(tintBase);
 
@@ -777,7 +787,7 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     if (this.ramRemaining > 0) this.ramRemaining = Math.max(0, this.ramRemaining - dt);
   }
 
-  /** Add XP and check for level up. Returns true if leveled up. */
+  /** Add XP and check for level up. Auto-applies balanced stat boosts. */
   addXp(amount: number): boolean {
     this.xp += amount;
     const maxLevel = Ship.XP_TABLE.length;
@@ -785,8 +795,13 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     const needed = Ship.XP_TABLE[this.level] ?? Infinity;
     if (this.xp >= needed) {
       this.level++;
-      // Recalculate maxHp to include hpBonusPct
+      // Auto-apply balanced boosts (no popup, no choice)
+      this.hpBonusPct += 0.06;          // +6% max HP
+      this.levelRegenPerSec += 1.5;      // +1.5 HP/sec
+      this.damageBonusPct += 0.05;       // +5% damage
+      this.skillCdReductPct += 0.04;     // -4% skill cooldown
       this.recalcMaxHp();
+      this.heal(this.maxHp * 0.06);      // heal the bonus
       return true;
     }
     return false;

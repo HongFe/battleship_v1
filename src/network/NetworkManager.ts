@@ -16,6 +16,13 @@ export interface RoomData {
   players: RoomPlayer[];
 }
 
+export interface RoomSummary {
+  id: string;
+  hostName: string;
+  playerCount: number;
+  maxPlayers: number;
+}
+
 export interface RemotePlayerState {
   x: number;
   y: number;
@@ -107,6 +114,9 @@ class NetworkManagerClass extends Phaser.Events.EventEmitter {
       case 'remote_player_action':
         this.emit('remote_player_action', msg.playerId, msg.action);
         break;
+      case 'room_list':
+        this.emit('room_list', msg.rooms);
+        break;
       case 'player_left':
         this.room = msg.room;
         this.emit('player_left', msg.playerId, msg.room);
@@ -128,6 +138,10 @@ class NetworkManagerClass extends Phaser.Events.EventEmitter {
   joinRoom(roomId: string, name: string): void {
     this.playerName = name;
     this.send({ type: 'join_room', roomId, name });
+  }
+
+  listRooms(): void {
+    this.send({ type: 'list_rooms' });
   }
 
   leaveRoom(): void {

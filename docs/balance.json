@@ -5,7 +5,7 @@
     "patrolboat": {
       "id": "patrolboat",
       "displayName": "통통배",
-      "hp": 250,
+      "hp": 375,
       "speed": 70,
       "armor": 5,
       "slots": {
@@ -30,7 +30,7 @@
     "trireme": {
       "id": "trireme",
       "displayName": "Greek Trireme",
-      "hp": 600,
+      "hp": 900,
       "speed": 36,
       "armor": 12,
       "slots": {
@@ -56,7 +56,7 @@
     "viking": {
       "id": "viking",
       "displayName": "Viking Longship",
-      "hp": 500,
+      "hp": 750,
       "speed": 38,
       "armor": 14,
       "slots": {
@@ -81,7 +81,7 @@
     "destroyer": {
       "id": "destroyer",
       "displayName": "ROKS Sejong",
-      "hp": 450,
+      "hp": 675,
       "speed": 58,
       "armor": 12,
       "slots": {
@@ -107,7 +107,7 @@
     "cruiser": {
       "id": "cruiser",
       "displayName": "HMS Belfast",
-      "hp": 750,
+      "hp": 1125,
       "speed": 42,
       "armor": 22,
       "slots": {
@@ -133,7 +133,7 @@
     "pirate": {
       "id": "pirate",
       "displayName": "Queen Anne's Revenge",
-      "hp": 700,
+      "hp": 1050,
       "speed": 48,
       "armor": 18,
       "slots": {
@@ -157,7 +157,7 @@
     "galleon": {
       "id": "galleon",
       "displayName": "Spanish Galleon",
-      "hp": 950,
+      "hp": 1425,
       "speed": 36,
       "armor": 26,
       "slots": {
@@ -181,7 +181,7 @@
     "panokseon": {
       "id": "panokseon",
       "displayName": "판옥선",
-      "hp": 900,
+      "hp": 1350,
       "speed": 38,
       "armor": 28,
       "slots": {
@@ -207,7 +207,7 @@
     "submarine": {
       "id": "submarine",
       "displayName": "K-141 Kursk",
-      "hp": 700,
+      "hp": 1050,
       "speed": 52,
       "armor": 18,
       "slots": {
@@ -232,7 +232,7 @@
     "battleship": {
       "id": "battleship",
       "displayName": "KMS Bismarck",
-      "hp": 1500,
+      "hp": 2250,
       "speed": 26,
       "armor": 42,
       "slots": {
@@ -256,7 +256,7 @@
     "turtleship": {
       "id": "turtleship",
       "displayName": "거북선",
-      "hp": 1300,
+      "hp": 1950,
       "speed": 32,
       "armor": 55,
       "slots": {
@@ -282,7 +282,7 @@
     "carrier": {
       "id": "carrier",
       "displayName": "USS Enterprise",
-      "hp": 1800,
+      "hp": 2700,
       "speed": 22,
       "armor": 45,
       "slots": {
@@ -306,7 +306,7 @@
     "yamato": {
       "id": "yamato",
       "displayName": "大和 (Yamato)",
-      "hp": 1700,
+      "hp": 2550,
       "speed": 22,
       "armor": 55,
       "slots": {
@@ -330,7 +330,7 @@
     "iowa": {
       "id": "iowa",
       "displayName": "USS Iowa",
-      "hp": 1450,
+      "hp": 2175,
       "speed": 36,
       "armor": 38,
       "slots": {
@@ -354,7 +354,7 @@
     "hood": {
       "id": "hood",
       "displayName": "HMS Hood",
-      "hp": 1200,
+      "hp": 1800,
       "speed": 38,
       "armor": 28,
       "slots": {
@@ -378,7 +378,7 @@
     "akagi": {
       "id": "akagi",
       "displayName": "赤城 (Akagi)",
-      "hp": 1700,
+      "hp": 2550,
       "speed": 28,
       "armor": 40,
       "slots": {
@@ -402,7 +402,7 @@
     "pyotr": {
       "id": "pyotr",
       "displayName": "Pyotr Velikiy",
-      "hp": 1500,
+      "hp": 2250,
       "speed": 30,
       "armor": 42,
       "slots": {
@@ -426,7 +426,7 @@
     "blackpearl": {
       "id": "blackpearl",
       "displayName": "Black Pearl",
-      "hp": 850,
+      "hp": 1275,
       "speed": 60,
       "armor": 22,
       "slots": {
@@ -451,7 +451,7 @@
     "flyingdutchman": {
       "id": "flyingdutchman",
       "displayName": "Flying Dutchman",
-      "hp": 1100,
+      "hp": 1650,
       "speed": 38,
       "armor": 35,
       "slots": {
@@ -476,7 +476,7 @@
     "royalfortune": {
       "id": "royalfortune",
       "displayName": "Royal Fortune",
-      "hp": 950,
+      "hp": 1425,
       "speed": 45,
       "armor": 26,
       "slots": {
@@ -500,7 +500,7 @@
     "kraken": {
       "id": "kraken",
       "displayName": "🐙 Kraken",
-      "hp": 2200,
+      "hp": 3300,
       "speed": 20,
       "armor": 60,
       "slots": {
@@ -526,7 +526,7 @@
     "phoenix": {
       "id": "phoenix",
       "displayName": "🔥 Phoenix Ship",
-      "hp": 1400,
+      "hp": 2100,
       "speed": 35,
       "armor": 30,
       "slots": {
@@ -552,7 +552,7 @@
     "ghostship": {
       "id": "ghostship",
       "displayName": "👻 Ghost Ship",
-      "hp": 1000,
+      "hp": 1500,
       "speed": 55,
       "armor": 20,
       "slots": {
@@ -577,7 +577,7 @@
     "thundership": {
       "id": "thundership",
       "displayName": "⚡ Zeus Thunder",
-      "hp": 1600,
+      "hp": 2400,
       "speed": 28,
       "armor": 35,
       "slots": {
@@ -601,7 +601,7 @@
     "medic": {
       "id": "medic",
       "displayName": "HMS Salvation",
-      "hp": 900,
+      "hp": 1350,
       "speed": 40,
       "armor": 25,
       "slots": {
@@ -627,7 +627,7 @@
     "seawitch": {
       "id": "seawitch",
       "displayName": "🌊 Sea Witch",
-      "hp": 1200,
+      "hp": 1800,
       "speed": 30,
       "armor": 35,
       "slots": {
@@ -653,7 +653,7 @@
     "hwacha": {
       "id": "hwacha",
       "displayName": "화차선 (Hwacha)",
-      "hp": 800,
+      "hp": 1200,
       "speed": 38,
       "armor": 22,
       "slots": {
@@ -679,7 +679,7 @@
     "warcrier": {
       "id": "warcrier",
       "displayName": "⚔ War Drummer",
-      "hp": 1000,
+      "hp": 1500,
       "speed": 42,
       "armor": 28,
       "slots": {

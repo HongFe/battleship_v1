@@ -27,6 +27,7 @@ export class UIScene extends Phaser.Scene {
   private waveText!: Phaser.GameObjects.Text;
   private itemSlots: Phaser.GameObjects.Graphics[] = [];
   private itemTexts: Phaser.GameObjects.Text[] = [];
+  private itemIcons: Phaser.GameObjects.Image[] = [];
 
   // Shop
   private shopOpen: boolean = false;
@@ -51,6 +52,11 @@ export class UIScene extends Phaser.Scene {
   private respawnGroup: Phaser.GameObjects.GameObject[] = [];
   private respawnText: Phaser.GameObjects.Text | null = null;
 
+  // HUD collapse (mobile-friendly)
+  private topHudObjects: Phaser.GameObjects.GameObject[] = [];
+  private hudCollapsed: boolean = false;
+  private hudToggleBtn!: Phaser.GameObjects.Container;
+
   constructor() {
     super({ key: 'UIScene' });
   }
@@ -70,42 +76,55 @@ export class UIScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    // === TOP HUD — pirate-noir wood plates ===
-    this.drawWoodPlate(8, 8, 230, 88);    // left (HP + gold)
-    this.drawWoodPlate(w / 2 - 60, 8, 120, 64);  // center (timer + wave)
-    this.drawWoodPlate(w - 148, 8, 140, 64);     // right (kills + allies)
+    // === TOP HUD — single thin strip on all screens (wood plates removed) ===
+    const topObjs: Phaser.GameObjects.GameObject[] = [];
+    {
+      // Single 34px-tall strip: [HP bar + %] [timer+tide] [gold] [kills]
+      const stripBg = this.add.graphics().setScrollFactor(0).setDepth(99);
+      stripBg.fillStyle(0x0A1628, 0.78);
+      stripBg.fillRect(0, 0, w, 34);
+      stripBg.lineStyle(1, Hex.brass, 0.6);
+      stripBg.lineBetween(0, 34, w, 34);
+      topObjs.push(stripBg);
 
-    this.hpBar = this.add.graphics().setScrollFactor(0).setDepth(100);
+      this.hpBar = this.add.graphics().setScrollFactor(0).setDepth(100);
+      topObjs.push(this.hpBar);
 
-    this.hpText = this.add.text(22, 16, 'HP 400/400', {
-      fontFamily: Fonts.numeric, fontSize: '14px', color: Colors.parchment,
-      stroke: '#000000', strokeThickness: 2,
-    }).setScrollFactor(0).setDepth(101);
+      this.hpText = this.add.text(8, 19, 'HP', {
+        fontFamily: Fonts.numeric, fontSize: '10px', color: Colors.parchment,
+        stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(101);
+      topObjs.push(this.hpText);
 
-    this.goldText = this.add.text(22, 64, '⚜ 500', {
-      fontFamily: Fonts.display, fontSize: '22px', color: Colors.brightGold,
-      stroke: '#000000', strokeThickness: 3,
-    }).setScrollFactor(0).setDepth(101);
+      this.timerText = this.add.text(w / 2, 12, '0:00', {
+        fontFamily: Fonts.numeric, fontSize: '12px', color: Colors.parchment,
+        stroke: '#000', strokeThickness: 2, fontStyle: 'bold',
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+      topObjs.push(this.timerText);
 
-    this.killText = this.add.text(w - 14, 14, '☠ 0', {
-      fontFamily: Fonts.display, fontSize: '17px', color: Colors.bone,
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(101);
+      this.waveText = this.add.text(w / 2, 24, 'I', {
+        fontFamily: Fonts.display, fontSize: '9px', color: Colors.brightGold,
+        stroke: '#000', strokeThickness: 2,
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+      topObjs.push(this.waveText);
 
-    this.aliveText = this.add.text(w - 14, 40, '⚓ Crew 3', {
-      fontFamily: Fonts.heading, fontSize: '12px', color: Colors.foam,
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(101);
+      this.goldText = this.add.text(w - 8, 9, '⚜ 500', {
+        fontFamily: Fonts.display, fontSize: '12px', color: Colors.brightGold,
+        stroke: '#000', strokeThickness: 2,
+      }).setOrigin(1, 0).setScrollFactor(0).setDepth(101);
+      topObjs.push(this.goldText);
 
-    this.timerText = this.add.text(w / 2, 14, '0:00', {
-      fontFamily: Fonts.numeric, fontSize: '20px', color: Colors.parchment,
-      stroke: '#000000', strokeThickness: 2, fontStyle: 'bold',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+      this.killText = this.add.text(w - 8, 21, '☠ 0', {
+        fontFamily: Fonts.display, fontSize: '10px', color: Colors.bone,
+        stroke: '#000', strokeThickness: 2,
+      }).setOrigin(1, 0).setScrollFactor(0).setDepth(101);
+      topObjs.push(this.killText);
 
-    this.waveText = this.add.text(w / 2, 42, 'TIDE I', {
-      fontFamily: Fonts.display, fontSize: '15px', color: Colors.brightGold,
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+      // Crew count hidden to save space; reachable later if needed
+      this.aliveText = this.add.text(-99, -99, '', { fontSize: '1px' }).setVisible(false);
+    }
+
+    this.topHudObjects = topObjs;
 
     // Wave notification (center, fades in/out)
     this.waveNotice = this.add.text(w / 2, h * 0.3, '', {
@@ -116,6 +135,9 @@ export class UIScene extends Phaser.Scene {
 
     // === MINIMAP ===
     this.minimap = this.add.graphics().setScrollFactor(0).setDepth(100);
+
+    // === HUD COLLAPSE TOGGLE — lets mobile users hide top bar when it blocks view
+    this.createHudToggle(w);
 
     // === BOTTOM ===
     this.createItemSlots(w, h);
@@ -163,7 +185,9 @@ export class UIScene extends Phaser.Scene {
       this.hideRespawnOverlay();
     });
     EventBus.on('level-up', (level: number) => {
-      this.showLevelUpChoices(level);
+      // No popup — just a toast notification
+      AudioManager.skill();
+      EventBus.emit('toast', `⭐ Lv.${level}! HP+6% DMG+5% REGEN+1.5`, '#FFD700');
     });
     EventBus.on('afk-triggered', () => {
       this.showAfkOverlay();
@@ -184,6 +208,45 @@ export class UIScene extends Phaser.Scene {
       EventBus.off('afk-triggered');
       EventBus.off('game-over', this.showGameOver, this);
     });
+  }
+
+  /** Small chevron button at top-right that hides/shows the top HUD (+ minimap). */
+  private createHudToggle(w: number): void {
+    const size = 26;
+    // Anchor below minimap area — always tappable even when HUD is collapsed
+    const x = w - size - 6;
+    const y = 170; // below minimap (100px) with margin; still visible in collapsed mode
+
+    const container = this.add.container(x, y).setScrollFactor(0).setDepth(200);
+
+    const bg = this.add.graphics();
+    bg.fillStyle(0x0A1628, 0.85);
+    bg.fillRoundedRect(0, 0, size, size, 5);
+    bg.lineStyle(1.5, Hex.brass, 0.9);
+    bg.strokeRoundedRect(0, 0, size, size, 5);
+    container.add(bg);
+
+    const arrow = this.add.text(size / 2, size / 2, '▴', {
+      fontFamily: 'monospace',
+      fontSize: '16px',
+      color: '#F5D97A',
+    }).setOrigin(0.5);
+    container.add(arrow);
+
+    const hit = this.add.rectangle(size / 2, size / 2, size, size, 0, 0)
+      .setInteractive({ useHandCursor: true });
+    container.add(hit);
+
+    hit.on('pointerdown', () => {
+      this.hudCollapsed = !this.hudCollapsed;
+      arrow.setText(this.hudCollapsed ? '▾' : '▴');
+      for (const obj of this.topHudObjects) {
+        (obj as Phaser.GameObjects.Image).setVisible(!this.hudCollapsed);
+      }
+      this.minimap.setVisible(!this.hudCollapsed);
+    });
+
+    this.hudToggleBtn = container;
   }
 
   /** Draw a weathered wood plate with brass rivets — pirate UI panel */
@@ -232,12 +295,13 @@ export class UIScene extends Phaser.Scene {
     if (Math.abs(this.targetHp - this.displayedHp) < 0.5) this.displayedHp = this.targetHp;
     if (Math.abs(this.targetGold - this.displayedGold) < 1) this.displayedGold = this.targetGold;
 
-    // Render HP bar
+    // Render HP bar — sits inside the thin top strip, scales with screen width
     if (this.targetMaxHp > 0) {
-      const barW = 206;
-      const barH = 14;
-      const barX = 20;
-      const barY = 38;
+      const barW = Math.min(this.scale.width - 180, 220);
+      const barH = 9;
+      const barX = 30;
+      const barY = 14;
+      const narrow = true; // strip layout uses % label
       const hpRatio = Phaser.Math.Clamp(this.displayedHp / this.targetMaxHp, 0, 1);
       const targetRatio = Phaser.Math.Clamp(this.targetHp / this.targetMaxHp, 0, 1);
       const hpColor = hpRatio > 0.5 ? Hex.bloodRed : hpRatio > 0.25 ? Hex.fireRed : Hex.brightRed;
@@ -260,7 +324,12 @@ export class UIScene extends Phaser.Scene {
       this.hpBar.lineStyle(1, Hex.brass, 0.9);
       this.hpBar.strokeRoundedRect(barX, barY, barW, barH, 3);
 
-      this.hpText.setText(`HP ${Math.ceil(this.displayedHp)} / ${Math.ceil(this.targetMaxHp)}`);
+      if (narrow) {
+        const pct = Math.round((this.displayedHp / this.targetMaxHp) * 100);
+        this.hpText.setText(`${pct}%`);
+      } else {
+        this.hpText.setText(`HP ${Math.ceil(this.displayedHp)} / ${Math.ceil(this.targetMaxHp)}`);
+      }
     }
     this.goldText.setText(`⚜ ${Math.floor(this.displayedGold)}`);
   }
@@ -536,9 +605,10 @@ export class UIScene extends Phaser.Scene {
     mm.clear();
 
     const w = this.scale.width;
-    const size = 100;
-    const mx = w - size - 10;
-    const my = 60;
+    const narrow = w < 500;
+    const size = narrow ? 72 : 100;
+    const mx = w - size - 8;
+    const my = narrow ? 62 : 60;
 
     mm.fillStyle(0x0A1628, 0.85);
     mm.fillRoundedRect(mx, my, size, size, 4);
@@ -656,7 +726,7 @@ export class UIScene extends Phaser.Scene {
   private createSkillButton(w: number, h: number): void {
     const btnSize = 64;
     const btnX = 18;
-    const btnY = h - btnSize - 12;
+    const btnY = h - btnSize - 75;
 
     this.skillButtonGfx = this.add.graphics().setScrollFactor(0).setDepth(100);
 
@@ -753,9 +823,11 @@ export class UIScene extends Phaser.Scene {
     for (const g of this.itemSlots) g.destroy();
     for (const t of this.itemTexts) t.destroy();
     for (const h of this.itemSlotHits) h.destroy();
+    for (const img of this.itemIcons) img.destroy();
     this.itemSlots = [];
     this.itemTexts = [];
     this.itemSlotHits = [];
+    this.itemIcons = [];
 
     const w = this.scale.width;
     const h = this.scale.height;
@@ -765,7 +837,7 @@ export class UIScene extends Phaser.Scene {
 
     const totalW = count * this.slotSize + (count - 1) * this.slotGap;
     const startX = (w - totalW) / 2;
-    const slotY = h - this.slotSize - 65;
+    const slotY = h - this.slotSize - 130;
 
     for (let i = 0; i < count; i++) {
       const x = startX + i * (this.slotSize + this.slotGap);
@@ -776,11 +848,18 @@ export class UIScene extends Phaser.Scene {
       g.strokeRoundedRect(x, slotY, this.slotSize, this.slotSize, 5);
       this.itemSlots.push(g);
 
-      const txt = this.add.text(x + this.slotSize / 2, slotY + this.slotSize / 2, '', {
-        fontSize: count >= 11 ? '9px' : '10px',
+      // Icon image (hidden until an item is equipped in this slot)
+      const icon = this.add.image(x + this.slotSize / 2, slotY + this.slotSize / 2, '__missing__')
+        .setScrollFactor(0).setDepth(101).setVisible(false);
+      this.itemIcons.push(icon);
+
+      // Abbreviated label (shown as fallback when no icon texture)
+      const txt = this.add.text(x + this.slotSize / 2, slotY + this.slotSize - 8, '', {
+        fontSize: count >= 11 ? '8px' : '9px',
         fontFamily: 'monospace', color: '#E8F4FF',
         align: 'center', wordWrap: { width: this.slotSize - 4 }, fontStyle: 'bold',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(102);
       this.itemTexts.push(txt);
 
       // Hit area for selling — click equipped item to sell
@@ -815,7 +894,7 @@ export class UIScene extends Phaser.Scene {
     const h = this.scale.height;
     const totalW = this.currentSlotCount * this.slotSize + (this.currentSlotCount - 1) * this.slotGap;
     const startX = (w - totalW) / 2;
-    const slotY = h - this.slotSize - 65;
+    const slotY = h - this.slotSize - 130;
 
     for (let i = 0; i < this.currentSlotCount; i++) {
       const x = startX + i * (this.slotSize + this.slotGap);
@@ -834,15 +913,34 @@ export class UIScene extends Phaser.Scene {
         g.fillRoundedRect(x, slotY, this.slotSize, this.slotSize, 5);
         g.lineStyle(1.5, typeColors[item.type] ?? 0x2A4A7A, 0.9);
         g.strokeRoundedRect(x, slotY, this.slotSize, this.slotSize, 5);
+
+        // Icon (Whisk PNG preferred, procedural canvas fallback)
+        const iconKey = this.iconKeyForItem(item);
+        const icon = this.itemIcons[i];
+        if (this.textures.exists(iconKey)) {
+          icon.setTexture(iconKey).setVisible(true);
+          const tex = this.textures.get(iconKey);
+          const src = tex?.getSourceImage() as HTMLImageElement | undefined;
+          const target = this.slotSize - 8;
+          const iconScale = src ? target / Math.max(src.width, src.height) : 1;
+          icon.setScale(iconScale);
+          icon.setPosition(x + this.slotSize / 2, slotY + this.slotSize / 2 - 3);
+        } else {
+          icon.setVisible(false);
+        }
+
+        // Small name label at bottom of slot (kept for readability)
         const abbr = item.displayName.split(' ').map(w => w[0]).join('').slice(0, 3);
         this.itemTexts[i].setText(abbr);
         this.itemTexts[i].setColor('#E8F4FF');
+        this.itemTexts[i].setPosition(x + this.slotSize / 2, slotY + this.slotSize - 2);
       } else {
         g.fillStyle(0x132240, 0.9);
         g.fillRoundedRect(x, slotY, this.slotSize, this.slotSize, 5);
         g.lineStyle(1.5, 0x2A4A7A, 0.5);
         g.strokeRoundedRect(x, slotY, this.slotSize, this.slotSize, 5);
         this.itemTexts[i].setText('');
+        this.itemIcons[i].setVisible(false);
       }
     }
   }
@@ -852,7 +950,7 @@ export class UIScene extends Phaser.Scene {
   private createShopButton(w: number, h: number): void {
     const btnSize = 56;
     const btnX = w - btnSize - 15;
-    const btnY = h - btnSize - 12;
+    const btnY = h - btnSize - 75;
 
     const g = this.add.graphics().setScrollFactor(0).setDepth(100);
     g.fillStyle(0xF5A623, 1);
@@ -1173,11 +1271,20 @@ export class UIScene extends Phaser.Scene {
       card.lineBetween(cx + 4, cy + 2, cx + cardW - 4, cy + 2);
       this.addShopElement(card);
 
-      // Icon at top
+      // Icon at top — auto-scale so big PNGs (Whisk 512²) don't blow up the card
       const iconKey = this.iconKeyForItem(item);
       if (iconKey && this.textures.exists(iconKey)) {
         const icon = this.add.image(cx + cardW / 2, cy + 38, iconKey)
-          .setScrollFactor(0).setDepth(203).setScale(0.85);
+          .setScrollFactor(0).setDepth(203);
+        const iconTex = this.textures.get(iconKey);
+        const iconSrc = iconTex?.getSourceImage() as HTMLImageElement | undefined;
+        if (iconSrc) {
+          const boxSize = 56; // target icon area (~56px square)
+          const s = boxSize / Math.max(iconSrc.width, iconSrc.height);
+          icon.setScale(s);
+        } else {
+          icon.setScale(0.85);
+        }
         if (!canAfford) icon.setAlpha(0.4);
         this.addShopElement(icon);
       }
@@ -1246,23 +1353,26 @@ export class UIScene extends Phaser.Scene {
     this.renderScrollArrows(w, contentTop, cardH);
   }
 
-  /** Determine which icon texture to use for an item */
+  /** Determine which icon texture to use for an item.
+   * Prefers the Whisk-generated `weapon_gen_{cat}.png` when loaded, otherwise
+   * falls back to the procedural `icon_{cat}` canvas texture from BootScene. */
   private iconKeyForItem(item: ItemConfig): string {
-    if (item.type === 'armor') return 'icon_armor';
-    if (item.type === 'special') return 'icon_special';
-    // weapon — by category
+    const pick = (cat: string): string => {
+      const gen = `weapon_gen_${cat}`;
+      return this.textures.exists(gen) ? gen : `icon_${cat}`;
+    };
+    if (item.type === 'armor') return pick('armor');
+    if (item.type === 'special') return pick('special');
     const weapon = item as any;
-    const cat = weapon.category;
-    if (cat) return `icon_${cat}`;
-    // fallback by projectileType
+    if (weapon.category) return pick(weapon.category);
     const pt = weapon.projectileType;
-    if (pt === 'splash' || pt === 'plasma') return 'icon_splash';
-    if (pt === 'piercing' || pt === 'rail') return 'icon_pierce';
-    if (pt === 'homing') return 'icon_homing';
-    if (pt === 'lightning' || pt === 'chain') return 'icon_chain';
-    if (pt === 'flame') return 'icon_flame';
-    if (pt === 'laser') return 'icon_beam';
-    return 'icon_rapid';
+    if (pt === 'splash' || pt === 'plasma') return pick('splash');
+    if (pt === 'piercing' || pt === 'rail') return pick('pierce');
+    if (pt === 'homing') return pick('homing');
+    if (pt === 'lightning' || pt === 'chain') return pick('chain');
+    if (pt === 'flame') return pick('flame');
+    if (pt === 'laser') return pick('beam');
+    return pick('rapid');
   }
 
   /** Render < and > arrow buttons for horizontal scroll */
@@ -1383,16 +1493,21 @@ export class UIScene extends Phaser.Scene {
       card.lineBetween(cx + 4, cy + 2, cx + cardW - 4, cy + 2);
       this.addShopElement(card);
 
-      // Ship sprite preview (vertical, fits half the card)
+      // Ship sprite preview (fits within ~40% of card height, respects aspect ratio)
+      // Whisk PNGs are 1024² square while procedural HQ sprites are tall thin —
+      // scale by the longer dimension so both fit inside the same visual box.
       const previewX = cx + cardW / 2;
       const previewY = cy + 12 + cardH * 0.25;
-      const previewSprite = this.add.image(previewX, previewY, cfg.spriteName)
+      const genKey = `ship_gen_${s.id}`;
+      const spriteKey = this.textures.exists(genKey) ? genKey : cfg.spriteName;
+      const previewSprite = this.add.image(previewX, previewY, spriteKey)
         .setScrollFactor(0).setDepth(203);
-      const tex = this.textures.get(cfg.spriteName);
+      const tex = this.textures.get(spriteKey);
       const src = tex?.getSourceImage() as HTMLImageElement | undefined;
       if (src) {
-        const targetH = cardH * 0.42;
-        const scale = targetH / src.height;
+        const boxW = cardW - 28;
+        const boxH = cardH * 0.42;
+        const scale = Math.min(boxW / src.width, boxH / src.height);
         previewSprite.setScale(scale);
       }
       this.addShopElement(previewSprite);

@@ -10,7 +10,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
-  backgroundColor: '#0D2137',
+  transparent: true,    // transparent so Three.js shows through
   parent: document.body,
   scale: {
     mode: Phaser.Scale.RESIZE,

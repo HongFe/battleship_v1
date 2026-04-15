@@ -31,6 +31,10 @@
       font-family: 'Noto Serif KR', serif;
     }
     canvas { display: block; touch-action: none; }
+    /* Mobile safe area — prevent browser chrome from covering UI */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body { padding-bottom: env(safe-area-inset-bottom); }
+    }
     /* Loading splash before Phaser starts */
     #boot-splash {
       position: fixed; inset: 0;

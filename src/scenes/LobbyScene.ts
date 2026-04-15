@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import { NetworkManager, RoomData, RoomPlayer } from '../network/NetworkManager';
+import { NetworkManager, RoomData, RoomPlayer, RoomSummary } from '../network/NetworkManager';
 import { ShipId } from '../config/types';
 
-type Mode = 'menu' | 'create' | 'join' | 'room' | 'connecting' | 'error';
+type Mode = 'menu' | 'create' | 'join' | 'joinCode' | 'room' | 'connecting' | 'error';
 
 /** Strip HTML-sensitive and control characters from user input */
 function sanitize(raw: string): string {
@@ -17,6 +17,9 @@ export class LobbyScene extends Phaser.Scene {
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private htmlElements: HTMLElement[] = [];
   private shutdownCalled: boolean = false;
+  private roomList: RoomSummary[] = [];
+  private roomListRefreshTimer: Phaser.Time.TimerEvent | null = null;
+  private pendingJoinName: string = 'Captain';
 
   constructor() {
     super({ key: 'LobbyScene' });
@@ -119,6 +122,10 @@ export class LobbyScene extends Phaser.Scene {
     NetworkManager.on('player_left', () => {
       if (this.mode === 'room') this.renderRoom();
     });
+    NetworkManager.on('room_list', (list: RoomSummary[]) => {
+      this.roomList = list;
+      if (this.mode === 'join') this.renderJoinList();
+    });
   }
 
   private setStatus(text: string): void {
@@ -141,6 +148,10 @@ export class LobbyScene extends Phaser.Scene {
         this.renderCreateForm();
         break;
       case 'join':
+        this.renderJoinList();
+        this.startRoomListRefresh();
+        break;
+      case 'joinCode':
         this.renderJoinForm();
         break;
       case 'room':
@@ -153,6 +164,19 @@ export class LobbyScene extends Phaser.Scene {
     for (const obj of this.uiObjects) obj.destroy();
     this.uiObjects = [];
     this.cleanupHtml();
+    if (this.roomListRefreshTimer) {
+      this.roomListRefreshTimer.remove(false);
+      this.roomListRefreshTimer = null;
+    }
+  }
+
+  private startRoomListRefresh(): void {
+    NetworkManager.listRooms();
+    this.roomListRefreshTimer = this.time.addEvent({
+      delay: 3000,
+      loop: true,
+      callback: () => NetworkManager.listRooms(),
+    });
   }
 
   private cleanupHtml(): void {
@@ -215,7 +239,136 @@ export class LobbyScene extends Phaser.Scene {
     });
   }
 
-  // ============ JOIN FORM ============
+  // ============ JOIN LIST (room browser) ============
+
+  private renderJoinList(): void {
+    this.clearUIOnly();
+    const w = this.scale.width;
+    const h = this.scale.height;
+
+    this.addUI(this.add.text(w / 2, h * 0.15, 'OPEN ROOMS', {
+      fontSize: '18px',
+      fontFamily: 'monospace',
+      color: '#E8F4FF',
+      fontStyle: 'bold',
+    }).setOrigin(0.5));
+
+    // Name input (persists between refreshes via pendingJoinName)
+    this.addUI(this.add.text(w / 2, h * 0.15 + 28, 'YOUR NAME', {
+      fontSize: '10px',
+      fontFamily: 'monospace',
+      color: '#8BA8CC',
+    }).setOrigin(0.5));
+    if (!this.nameInput) {
+      this.nameInput = this.createHtmlInput(w / 2 - 100, h * 0.15 + 42, 200, 32, 'Captain', 16);
+      this.nameInput.value = this.pendingJoinName;
+      this.nameInput.addEventListener('input', () => {
+        this.pendingJoinName = sanitize(this.nameInput?.value || '') || 'Captain';
+      });
+    }
+
+    // List area
+    const listX = 20;
+    const listY = h * 0.30;
+    const listW = w - 40;
+    const listH = h * 0.50;
+
+    const listBg = this.add.graphics();
+    listBg.fillStyle(0x0E1A30, 0.9);
+    listBg.fillRoundedRect(listX, listY, listW, listH, 10);
+    listBg.lineStyle(2, 0x2E6DA4, 0.6);
+    listBg.strokeRoundedRect(listX, listY, listW, listH, 10);
+    this.addUI(listBg);
+
+    if (this.roomList.length === 0) {
+      this.addUI(this.add.text(w / 2, listY + listH / 2, '열린 방이 없습니다\n방을 만들어보세요', {
+        fontSize: '13px',
+        fontFamily: 'monospace',
+        color: '#6A7A94',
+        align: 'center',
+      }).setOrigin(0.5));
+    } else {
+      const rowH = 46;
+      const maxRows = Math.floor((listH - 20) / rowH);
+      this.roomList.slice(0, maxRows).forEach((r, i) => {
+        const ry = listY + 10 + i * rowH;
+        const rowBg = this.add.graphics();
+        rowBg.fillStyle(0x132240, 0.9);
+        rowBg.fillRoundedRect(listX + 10, ry, listW - 20, rowH - 6, 6);
+        rowBg.lineStyle(1, 0x2E6DA4, 0.4);
+        rowBg.strokeRoundedRect(listX + 10, ry, listW - 20, rowH - 6, 6);
+        this.addUI(rowBg);
+
+        // Room code
+        this.addUI(this.add.text(listX + 24, ry + rowH / 2 - 3, r.id, {
+          fontSize: '18px',
+          fontFamily: 'monospace',
+          color: '#FFD700',
+          fontStyle: 'bold',
+        }).setOrigin(0, 0.5));
+
+        // Host name
+        this.addUI(this.add.text(listX + 110, ry + rowH / 2 - 3, `★ ${r.hostName}`, {
+          fontSize: '12px',
+          fontFamily: 'monospace',
+          color: '#E8F4FF',
+        }).setOrigin(0, 0.5));
+
+        // Player count
+        const pcColor = r.playerCount >= r.maxPlayers ? '#CC4A4A' : '#3DC47E';
+        this.addUI(this.add.text(listX + listW - 100, ry + rowH / 2 - 3,
+          `${r.playerCount}/${r.maxPlayers}`, {
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          color: pcColor,
+          fontStyle: 'bold',
+        }).setOrigin(0, 0.5));
+
+        // Join button
+        const btnX = listX + listW - 50;
+        const btnY = ry + rowH / 2 - 3;
+        const bg = this.add.graphics();
+        bg.fillStyle(0x4A9ECC, 1);
+        bg.fillRoundedRect(btnX - 24, btnY - 12, 48, 24, 5);
+        this.addUI(bg);
+        this.addUI(this.add.text(btnX, btnY, 'JOIN', {
+          fontSize: '11px',
+          fontFamily: 'monospace',
+          color: '#FFFFFF',
+          fontStyle: 'bold',
+        }).setOrigin(0.5));
+
+        const hit = this.add.rectangle(listX + 10, ry, listW - 20, rowH - 6, 0, 0)
+          .setOrigin(0, 0)
+          .setInteractive({ useHandCursor: true });
+        hit.on('pointerdown', () => {
+          const name = sanitize(this.nameInput?.value || '') || 'Captain';
+          NetworkManager.joinRoom(r.id, name);
+        });
+        this.addUI(hit);
+      });
+    }
+
+    // Bottom buttons: Refresh, Join by code, Back
+    const btnY = h * 0.30 + h * 0.50 + 30;
+    this.makeButton(w / 2 - 120, btnY, 100, 44, '↻ REFRESH', 0x2E6DA4, () => {
+      NetworkManager.listRooms();
+    });
+    this.makeButton(w / 2, btnY, 120, 44, 'CODE...', 0x666666, () => {
+      this.setMode('joinCode');
+    });
+    this.makeButton(w / 2 + 120, btnY, 100, 44, 'BACK', 0x444444, () => {
+      this.setMode('menu');
+    });
+  }
+
+  /** Clear Phaser UI objects but keep HTML inputs & timer alive (avoids flicker on refresh). */
+  private clearUIOnly(): void {
+    for (const obj of this.uiObjects) obj.destroy();
+    this.uiObjects = [];
+  }
+
+  // ============ JOIN BY CODE (fallback for private rooms) ============
 
   private renderJoinForm(): void {
     const w = this.scale.width;

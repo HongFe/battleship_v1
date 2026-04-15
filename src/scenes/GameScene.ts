@@ -9,6 +9,7 @@ import { TreasurePickup } from '../entities/TreasurePickup';
 import { AutoAttackSystem } from '../systems/AutoAttackSystem';
 import { InputSystem } from '../systems/InputSystem';
 import { FogOfWar } from '../systems/FogOfWar';
+import { ThreeScene } from '../renderer/ThreeScene';
 import { EventBus } from '../utils/EventBus';
 import { NetworkManager, RemotePlayerState } from '../network/NetworkManager';
 import { AudioManager } from '../utils/AudioManager';
@@ -48,9 +49,12 @@ export class GameScene extends Phaser.Scene {
   public treasures: TreasurePickup[] = [];
   public playerNexus!: Tower;
   public enemyNexus!: Tower;
+  public playerBarracks!: Tower;   // 아군 배럭 — 파괴되면 아군 NPC 안 나옴
+  public enemyBarracks!: Tower;    // 적 배럭 — 파괴되면 적 NPC 안 나옴
   public autoAttack!: AutoAttackSystem;
   private inputSystem!: InputSystem;
   private fog!: FogOfWar;
+  private three!: ThreeScene;
   private balance!: BalanceConfig;
 
   // Terrain
@@ -81,6 +85,10 @@ export class GameScene extends Phaser.Scene {
   public waveNumber: number = 1;
   private waveTimer: number = 0;
   private readonly WAVE_INTERVAL = 22;
+  // Titan (super-ship) system — slow capital ships from each base every 5 min
+  private titanTimer: number = 0;
+  private readonly TITAN_INTERVAL = 300;
+  private readonly TITAN_SPEED_MUL = 0.5;
 
   // Game state
   private gameOver: boolean = false;
@@ -125,6 +133,7 @@ export class GameScene extends Phaser.Scene {
     this.waves = [];
     this.waveNumber = 1;
     this.waveTimer = 0;
+    this.titanTimer = 0;
     this.isMultiplayer = !!data.multiplayer;
     this.remoteShips = new Map();
     this.remoteTargets = new Map();
@@ -243,6 +252,9 @@ export class GameScene extends Phaser.Scene {
     this.towers.push(new Tower(this, pX - mapW * 0.18, pY - 90, 0, false));
     this.towers.push(new Tower(this, pX + mapW * 0.18, pY - 90, 0, false));
     this.towers.push(new Tower(this, pX, pY - 220, 0, false));
+    // Barracks (shipyard) — generates ally NPC waves
+    this.playerBarracks = new Tower(this, pX, pY - 140, 0, false);
+    this.towers.push(this.playerBarracks);
 
     // Defensive terrain — rocks/islands flanking player base (narrow entrance)
     this.islands.push(this.createIsland(pX - mapW * 0.3, pY + 30, 55, 'rocks'));
@@ -259,6 +271,9 @@ export class GameScene extends Phaser.Scene {
     this.towers.push(new Tower(this, eX - mapW * 0.18, eY + 90, 1, false));
     this.towers.push(new Tower(this, eX + mapW * 0.18, eY + 90, 1, false));
     this.towers.push(new Tower(this, eX, eY + 220, 1, false));
+    // Enemy barracks
+    this.enemyBarracks = new Tower(this, eX, eY + 140, 1, false);
+    this.towers.push(this.enemyBarracks);
 
     // Enemy base defensive terrain
     this.islands.push(this.createIsland(eX - mapW * 0.3, eY - 30, 55, 'rocks'));
@@ -286,6 +301,8 @@ export class GameScene extends Phaser.Scene {
     else if (wave <= 9) weapons = [...tier4, ...tier5];
     else weapons = tier5;
 
+    // Lane waves stay mid-tier; titan-class ships (battleship/carrier/yamato/turtleship)
+    // are gated to the 5-minute titan spawn instead of flooding lanes.
     const ships: ShipId[] = wave <= 1
       ? ['patrolboat', 'patrolboat', 'destroyer']
       : wave <= 2
@@ -295,8 +312,8 @@ export class GameScene extends Phaser.Scene {
       : wave <= 6
       ? ['cruiser', 'submarine', 'pirate', 'galleon']
       : wave <= 8
-      ? ['cruiser', 'battleship', 'submarine', 'galleon', 'panokseon']
-      : ['battleship', 'battleship', 'carrier', 'turtleship', 'yamato'];
+      ? ['cruiser', 'submarine', 'galleon', 'panokseon']
+      : ['cruiser', 'cruiser', 'submarine', 'galleon', 'panokseon'];
 
     return { weapons, ships };
   }
@@ -321,6 +338,10 @@ export class GameScene extends Phaser.Scene {
       );
       const ally = new Ship(this, spawn.x, spawn.y, cfg, 0, true);
       ally.gold = 300;
+      // Lane minions are weaker than player — same scaling as enemies
+      const hpMul = 0.6 + Math.min(this.waveNumber * 0.04, 0.4);
+      ally.maxHp = Math.floor(cfg.hp * hpMul);
+      ally.currentHp = ally.maxHp;
       ally.heading = -Math.PI / 2;
       ally.targetHeading = -Math.PI / 2;
       for (let j = 0; j < cfg.slots.weapon; j++) {
@@ -329,6 +350,47 @@ export class GameScene extends Phaser.Scene {
       }
       this.allies.push(ally);
     }
+  }
+
+  /** Spawn one slow super-ship from each base (5-min cadence). */
+  private spawnTitans(): void {
+    const mapW = this.balance.map.worldWidth;
+    const mapH = this.balance.map.worldHeight;
+    const { weapons } = this.getWavePools();
+    const allyPool: ShipId[] = ['battleship', 'turtleship'];
+    const enemyPool: ShipId[] = ['yamato', 'carrier'];
+
+    const mkTitan = (shipId: ShipId, team: 0 | 1, baseX: number, baseY: number, heading: number) => {
+      const raw = this.balance.ships[shipId];
+      // Clone config so speed nerf doesn't leak to other spawns
+      const cfg = { ...raw, speed: raw.speed * this.TITAN_SPEED_MUL };
+      const spawn = this.findSafeSpawn(
+        Phaser.Math.Clamp(baseX, 150, mapW - 150),
+        Phaser.Math.Clamp(baseY, 150, mapH - 150),
+        mapW, mapH,
+      );
+      const ship = new Ship(this, spawn.x, spawn.y, cfg, team, true);
+      ship.gold = 500;
+      ship.heading = heading;
+      ship.targetHeading = heading;
+      for (let j = 0; j < cfg.slots.weapon; j++) {
+        const w = weapons[Phaser.Math.Between(0, weapons.length - 1)];
+        ship.equipItem({ ...this.balance.items[w] } as WeaponItemConfig);
+      }
+      return ship;
+    };
+
+    if (this.playerBarracks && !this.playerBarracks.isDead && this.playerNexus) {
+      const id = allyPool[Phaser.Math.Between(0, allyPool.length - 1)];
+      const t = mkTitan(id, 0, this.playerNexus.x, this.playerNexus.y - 100, -Math.PI / 2);
+      this.allies.push(t);
+    }
+    if (this.enemyBarracks && !this.enemyBarracks.isDead && this.enemyNexus) {
+      const id = enemyPool[Phaser.Math.Between(0, enemyPool.length - 1)];
+      const t = mkTitan(id, 1, this.enemyNexus.x, this.enemyNexus.y + 100, Math.PI / 2);
+      this.enemies.push(t);
+    }
+    EventBus.emit('toast', '⚓ Titan ship deployed', '#FFD24D');
   }
 
   private spawnEnemyWave(count: number): void {
@@ -355,8 +417,8 @@ export class GameScene extends Phaser.Scene {
       // Face south (toward player base)
       enemy.heading = Math.PI / 2;
       enemy.targetHeading = Math.PI / 2;
-      // Gentler HP scaling: 1.0x at wave 1 → 2.0x by wave 10
-      const hpMul = 1.0 + Math.min(this.waveNumber * 0.1, 1.0);
+      // NPC lane minions are WEAKER than player ships — cannon fodder
+      const hpMul = 0.6 + Math.min(this.waveNumber * 0.04, 0.4); // 0.6x → 1.0x
       enemy.maxHp = Math.floor(cfg.hp * hpMul);
       enemy.currentHp = enemy.maxHp;
       for (let j = 0; j < cfg.slots.weapon; j++) {
@@ -397,9 +459,17 @@ export class GameScene extends Phaser.Scene {
     this.inputSystem = new InputSystem(this);
     this.fog = new FogOfWar(this, mapW, mapH);
 
+    // Three.js 3D rendering layer (behind Phaser canvas)
+    this.three = new ThreeScene();
+    // Make Phaser canvas transparent so 3D shows through
+    const phaserCanvas = this.game.canvas;
+    phaserCanvas.style.position = 'fixed';
+    phaserCanvas.style.zIndex = '1';
+    phaserCanvas.style.background = 'transparent';
+
     // Camera
     this.cameras.main.startFollow(this.player, true, 0.06, 0.06);
-    this.cameras.main.setZoom(1.6);
+    this.cameras.main.setZoom(1.1);
     this.cameras.main.setBounds(0, 0, mapW, mapH);
 
     // === Modern post-processing FX (Phaser 3.60+ FX pipeline) ===
@@ -1013,11 +1083,26 @@ export class GameScene extends Phaser.Scene {
         this.waveNumber++;
         this.allies = this.allies.filter(s => !s.isDead);
         this.enemies = this.enemies.filter(s => !s.isDead);
-        // Both sides get EQUAL reinforcements (front line stays even)
+        // Both sides get EQUAL reinforcements — BUT only if barracks alive
         const waveCount = Math.min(2 + Math.floor(this.waveNumber * 0.5), 6);
-        this.spawnAllyWave(waveCount);
-        this.spawnEnemyWave(waveCount);
+
+        if (this.playerBarracks && !this.playerBarracks.isDead) {
+          this.spawnAllyWave(waveCount);
+        }
+        if (this.enemyBarracks && !this.enemyBarracks.isDead) {
+          this.spawnEnemyWave(waveCount);
+        }
+
+        // Check barracks destruction rewards
+        this.checkBarracksRewards();
         EventBus.emit('wave-spawned', this.waveNumber);
+      }
+
+      // Titan cadence — independent 5-minute timer
+      this.titanTimer += delta / 1000;
+      if (this.titanTimer >= this.TITAN_INTERVAL) {
+        this.titanTimer = 0;
+        this.spawnTitans();
       }
     }
 
@@ -1151,6 +1236,27 @@ export class GameScene extends Phaser.Scene {
       }
     }
     this.fog.update(this.cameras.main, visionSources);
+
+    // === Three.js 3D render sync ===
+    if (this.three) {
+      // Sync camera target
+      if (!this.player.isDead) {
+        this.three.setCameraTarget(this.player.x, this.player.y);
+      }
+      // Sync all ships to 3D meshes
+      for (const ship of allShips) {
+        this.three.syncShip(
+          ship.__id, ship.x, ship.y, ship.heading,
+          ship.config.id, ship.team, ship.isDead,
+        );
+      }
+      // Sync towers
+      for (const tower of this.towers) {
+        this.three.syncTower(tower.__id, tower.x, tower.y, tower.team, tower.isNexus, tower.isDead);
+      }
+      // Render 3D frame
+      this.three.render();
+    }
 
     EventBus.emit('hud-update', {
       hp: this.player.currentHp,
@@ -1563,6 +1669,25 @@ export class GameScene extends Phaser.Scene {
       this.scene.stop('UIScene');
       this.scene.start('TitleScene');
     });
+  }
+
+  /** Check if barracks were destroyed — award gold + announce */
+  private barracksRewardGiven = new Set<number>();
+  private checkBarracksRewards(): void {
+    // Enemy barracks destroyed → player gets big gold reward
+    if (this.enemyBarracks?.isDead && !this.barracksRewardGiven.has(1)) {
+      this.barracksRewardGiven.add(1);
+      if (!this.player.isDead) {
+        this.player.gold += 500;
+        EventBus.emit('gold-changed', this.player.gold);
+      }
+      EventBus.emit('toast', '⚔ 적 조선소 파괴! +500g! 적 증원 중단!', '#FF6622');
+    }
+    // Player barracks destroyed → enemy gets advantage (warn player)
+    if (this.playerBarracks?.isDead && !this.barracksRewardGiven.has(0)) {
+      this.barracksRewardGiven.add(0);
+      EventBus.emit('toast', '⚠ 아군 조선소 파괴! 아군 증원 중단!', '#E84545');
+    }
   }
 
   /** Respawn the player at base with previous loadout */

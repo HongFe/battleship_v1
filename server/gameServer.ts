@@ -27,6 +27,7 @@ const VALID_ROOM_ID = /^[A-Z0-9]{4}$/;
 const VALID_MSG_TYPES = new Set([
   'create_room', 'join_room', 'set_team', 'set_ship',
   'set_ready', 'start_game', 'player_state', 'player_action', 'leave_room',
+  'list_rooms',
 ]);
 
 /** Strip HTML-sensitive and control chars from player name */
@@ -384,6 +385,24 @@ export function setupGameServer(wss: WebSocketServer) {
             { type: 'remote_player_action', playerId, action: msg.action },
             playerId,
           );
+          break;
+        }
+
+        case 'list_rooms': {
+          // Return summary of open rooms (waiting state, not full)
+          const list = Array.from(rooms.values())
+            .filter(r => r.state === 'waiting' && r.players.size < 4)
+            .map(r => {
+              const host = r.players.get(r.hostId);
+              return {
+                id: r.id,
+                hostName: host?.name ?? 'Host',
+                playerCount: r.players.size,
+                maxPlayers: 4,
+              };
+            })
+            .slice(0, 50);
+          send(ws, { type: 'room_list', rooms: list });
           break;
         }
 

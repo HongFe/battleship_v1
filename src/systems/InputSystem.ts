@@ -4,6 +4,7 @@ export class InputSystem {
   private scene: Phaser.Scene;
   private joystickBase: Phaser.GameObjects.Graphics;
   private joystickThumb: Phaser.GameObjects.Graphics;
+  private joystickHint: Phaser.GameObjects.Graphics;
   private touchId: number | null = null;
   private startPos: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
   public direction: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
@@ -33,8 +34,44 @@ export class InputSystem {
       .setDepth(1001)
       .setVisible(false);
 
+    // Faint hint stick — always visible bottom-right so mobile users know
+    // they can drag from anywhere here to steer
+    this.joystickHint = scene.add.graphics()
+      .setScrollFactor(0)
+      .setDepth(999);
+    this.drawHint();
+    scene.scale.on('resize', () => this.drawHint());
+
     this.setupTouch();
     this.setupKeyboard();
+  }
+
+  private drawHint(): void {
+    const w = this.scene.scale.width;
+    const h = this.scene.scale.height;
+    const cx = w - 90;
+    const cy = h - 130;
+    const r = 50;
+    const g = this.joystickHint;
+    g.clear();
+    // Outer ring
+    g.lineStyle(2, 0xFFFFFF, 0.18);
+    g.strokeCircle(cx, cy, r);
+    // Soft fill
+    g.fillStyle(0xFFFFFF, 0.06);
+    g.fillCircle(cx, cy, r);
+    // Inner thumb hint
+    g.fillStyle(0xFFFFFF, 0.16);
+    g.fillCircle(cx, cy, 18);
+    // Tiny directional arrows
+    const arrow = (ax: number, ay: number, dx: number, dy: number) => {
+      g.lineStyle(1.5, 0xFFFFFF, 0.25);
+      g.lineBetween(ax, ay, ax + dx, ay + dy);
+    };
+    arrow(cx, cy - r * 0.55, 0, -6);
+    arrow(cx, cy + r * 0.55, 0, 6);
+    arrow(cx - r * 0.55, cy, -6, 0);
+    arrow(cx + r * 0.55, cy, 6, 0);
   }
 
   private setupKeyboard(): void {
@@ -86,6 +123,7 @@ export class InputSystem {
       this.drawJoystickThumb(pointer.x, pointer.y);
       this.joystickBase.setVisible(true);
       this.joystickThumb.setVisible(true);
+      this.joystickHint.setVisible(false);
     });
 
     this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -115,6 +153,7 @@ export class InputSystem {
       this.touchId = null;
       this.joystickBase.setVisible(false);
       this.joystickThumb.setVisible(false);
+      this.joystickHint.setVisible(true);
       // Keyboard may still be active
       if (!this.keyboardActive) {
         this.isActive = false;
@@ -143,5 +182,6 @@ export class InputSystem {
   destroy(): void {
     this.joystickBase.destroy();
     this.joystickThumb.destroy();
+    this.joystickHint.destroy();
   }
 }

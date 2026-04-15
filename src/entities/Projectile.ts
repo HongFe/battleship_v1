@@ -363,30 +363,80 @@ export class Projectile extends Phaser.GameObjects.Graphics {
         const angle = Math.atan2(this.vy, this.vx);
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        // Missile body
-        this.fillStyle(0x666666, 1);
-        this.fillTriangle(
-          cos * 8, sin * 8,
-          -sin * 3, cos * 3,
-          sin * 3, -cos * 3,
-        );
-        this.fillStyle(0xCCCCCC, 1);
-        this.fillRect(-cos * 6 - 1, -sin * 6 - 1, 2, 2);
-        // Exhaust flame
-        this.fillStyle(0xFFAA00, 0.9);
-        this.fillCircle(-cos * 8, -sin * 8, 3);
-        this.fillStyle(0xFFFF66, 0.6);
+        const flick = 0.85 + Math.random() * 0.15;
+
+        // Outer exhaust flare (behind missile)
+        this.fillStyle(0xFF6600, 0.35 * flick);
+        this.fillCircle(-cos * 11, -sin * 11, 7);
+        this.fillStyle(0xFFAA00, 0.55 * flick);
+        this.fillCircle(-cos * 10, -sin * 10, 5);
+        this.fillStyle(0xFFDD55, 0.85 * flick);
+        this.fillCircle(-cos * 9, -sin * 9, 3);
+        this.fillStyle(0xFFFFFF, flick);
         this.fillCircle(-cos * 8, -sin * 8, 1.5);
+
+        // Missile body — elongated capsule shape
+        // Fuselage (dark grey outline behind)
+        this.fillStyle(0x101820, 1);
+        this.fillTriangle(
+          cos * 11, sin * 11,
+          cos * -6 + -sin * 4.5, sin * -6 + cos * 4.5,
+          cos * -6 + sin * 4.5, sin * -6 + -cos * 4.5,
+        );
+        // Red/white striped body
+        this.fillStyle(0xE84545, 1);
+        this.fillTriangle(
+          cos * 9, sin * 9,
+          cos * -5 + -sin * 3, sin * -5 + cos * 3,
+          cos * -5 + sin * 3, sin * -5 + -cos * 3,
+        );
+        // White mid stripe
+        this.fillStyle(0xF5F5F5, 1);
+        this.fillTriangle(
+          cos * 3, sin * 3,
+          cos * -1 + -sin * 2.6, sin * -1 + cos * 2.6,
+          cos * -1 + sin * 2.6, sin * -1 + -cos * 2.6,
+        );
+        // Pointed warhead
+        this.fillStyle(0x222228, 1);
+        this.fillTriangle(
+          cos * 11, sin * 11,
+          cos * 5 + -sin * 2, sin * 5 + cos * 2,
+          cos * 5 + sin * 2, sin * 5 + -cos * 2,
+        );
+        // Fin tail
+        this.fillStyle(0x202028, 1);
+        this.fillTriangle(
+          cos * -5, sin * -5,
+          cos * -8 + -sin * 4, sin * -8 + cos * 4,
+          cos * -8 + sin * 4, sin * -8 + -cos * 4,
+        );
         break;
       }
 
-      default:
-        // normal cannonball
-        this.fillStyle(0xFFDD44, 1);
+      case 'normal':
+      default: {
+        // Cannonball with hot metal core + motion halo
+        const angle = Math.atan2(this.vy, this.vx);
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        // Soft motion halo
+        this.fillStyle(0xFFAA33, 0.25);
+        this.fillCircle(0, 0, 6);
+        // Iron cannonball outline
+        this.fillStyle(0x0A0A10, 1);
+        this.fillCircle(0, 0, 4.2);
+        // Fill
+        this.fillStyle(0x2A2A35, 1);
         this.fillCircle(0, 0, 3.5);
-        this.fillStyle(0xFFFFFF, 0.3);
-        this.fillCircle(-1, -1, 1.5);
+        // Hot glow streak
+        this.fillStyle(0xFF7722, 0.9);
+        this.fillCircle(-cos * 1.2, -sin * 1.2, 2.2);
+        // Specular highlight
+        this.fillStyle(0xFFFFFF, 0.85);
+        this.fillCircle(-1, -1.2, 1.2);
         break;
+      }
     }
   }
 
