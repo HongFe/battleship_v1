@@ -317,17 +317,9 @@ export class LobbyScene extends Phaser.Scene {
         rowBg.strokeRoundedRect(listX + 10, ry, listW - 20, rowH - 6, 6);
         this.addUI(rowBg);
 
-        // Room code (small, top-left)
-        this.addUI(this.add.text(listX + 24, ry + 6, r.id, {
-          fontSize: '11px',
-          fontFamily: 'monospace',
-          color: '#FFD700',
-          fontStyle: 'bold',
-        }).setOrigin(0, 0));
-
         // Title (large, center-left)
         const titleText = r.title || '함대';
-        this.addUI(this.add.text(listX + 70, ry + rowH / 2 - 3, titleText, {
+        this.addUI(this.add.text(listX + 24, ry + rowH / 2 - 3, titleText, {
           fontSize: '14px',
           fontFamily: 'monospace',
           color: '#E8F4FF',
@@ -335,7 +327,7 @@ export class LobbyScene extends Phaser.Scene {
         }).setOrigin(0, 0.5));
 
         // Host name (small, below title)
-        this.addUI(this.add.text(listX + 70, ry + rowH - 12, `★ ${r.hostName}`, {
+        this.addUI(this.add.text(listX + 24, ry + rowH - 12, `★ ${r.hostName}`, {
           fontSize: '10px',
           fontFamily: 'monospace',
           color: '#8BA8CC',
@@ -376,15 +368,12 @@ export class LobbyScene extends Phaser.Scene {
       });
     }
 
-    // Bottom buttons: Refresh, Join by code, Back
+    // Bottom buttons: Refresh, Back (public rooms only — no manual code)
     const btnY = h * 0.30 + h * 0.50 + 30;
-    this.makeButton(w / 2 - 120, btnY, 100, 44, '↻ REFRESH', 0x2E6DA4, () => {
+    this.makeButton(w / 2 - 65, btnY, 120, 44, '↻ REFRESH', 0x2E6DA4, () => {
       NetworkManager.listRooms();
     });
-    this.makeButton(w / 2, btnY, 120, 44, 'CODE...', 0x666666, () => {
-      this.setMode('joinCode');
-    });
-    this.makeButton(w / 2 + 120, btnY, 100, 44, 'BACK', 0x444444, () => {
+    this.makeButton(w / 2 + 65, btnY, 120, 44, 'BACK', 0x444444, () => {
       this.setMode('menu');
     });
   }
@@ -441,22 +430,17 @@ export class LobbyScene extends Phaser.Scene {
     const room = NetworkManager.room;
     if (!room) return;
 
-    // Room code
-    this.addUI(this.add.text(w / 2, 80, `ROOM CODE`, {
-      fontSize: '12px',
-      fontFamily: 'monospace',
-      color: '#8BA8CC',
-    }).setOrigin(0.5));
-
-    this.addUI(this.add.text(w / 2, 100, room.id, {
-      fontSize: '36px',
+    // Room title (prominent). Rooms are public — friends join via the list.
+    const displayTitle = room.title || '함대';
+    this.addUI(this.add.text(w / 2, 85, displayTitle, {
+      fontSize: '22px',
       fontFamily: 'monospace',
       color: '#FFD700',
       fontStyle: 'bold',
     }).setOrigin(0.5));
 
-    this.addUI(this.add.text(w / 2, 140, '↑ 친구에게 이 코드를 알려주세요 ↑', {
-      fontSize: '11px',
+    this.addUI(this.add.text(w / 2, 115, '친구들은 JOIN ROOM 목록에서 이 방을 찾을 수 있어요', {
+      fontSize: '10px',
       fontFamily: 'monospace',
       color: '#8BA8CC',
     }).setOrigin(0.5));
