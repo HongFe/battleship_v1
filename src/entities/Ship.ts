@@ -59,6 +59,8 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
   private nameText: Phaser.GameObjects.Text;
   private overlayGraphics: Phaser.GameObjects.Graphics;
   private wakeGraphics: Phaser.GameObjects.Graphics;
+  /** When true, the ship is currently hidden from the viewer's team (fog of war) */
+  public hiddenByFog: boolean = false;
   private wakeParticles: { x: number; y: number; alpha: number; age: number }[] = [];
   private shadowSprite: Phaser.GameObjects.Sprite;
   private rimLight: Phaser.GameObjects.Sprite;
@@ -847,6 +849,21 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     const baseHp = this.config.hp;
     const armorHp = this.equippedArmors.reduce((s, a) => s + a.hpBonus, 0);
     this.maxHp = Math.floor((baseHp + armorHp) * (1 + this.hpBonusPct));
+  }
+
+  /** Toggle this ship's visibility based on the viewer team's fog of war.
+   *  Dead ships stay hidden regardless (death hides them already). */
+  setHiddenByFog(hidden: boolean): void {
+    if (this.isDead) return;
+    if (this.hiddenByFog === hidden) return;
+    this.hiddenByFog = hidden;
+    this.setVisible(!hidden);
+    this.overlayGraphics.setVisible(!hidden);
+    this.healthBar.setVisible(!hidden);
+    this.nameText.setVisible(!hidden);
+    this.wakeGraphics.setVisible(!hidden);
+    this.shadowSprite.setVisible(!hidden);
+    this.rimLight.setVisible(!hidden);
   }
 
   /** Activate the ship's signature skill. Returns true if used. */

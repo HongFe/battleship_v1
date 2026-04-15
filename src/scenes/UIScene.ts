@@ -31,6 +31,11 @@ export class UIScene extends Phaser.Scene {
 
   // Shop
   private shopOpen: boolean = false;
+  // Swipe/drag state for shop horizontal scroll
+  private shopDragActive: boolean = false;
+  private shopDragStartX: number = 0;
+  private shopDragStartScroll: number = 0;
+  private shopWasDragged: boolean = false;
   private shopElements: Phaser.GameObjects.GameObject[] = [];
   private currentCategory: ShopCategory = 'weapon';
   private currentWeaponCategory: WeaponCategory | 'all' = 'all';
@@ -73,6 +78,9 @@ export class UIScene extends Phaser.Scene {
     this.currentNation = 'all';
     this.shopScrollX = 0;
     this.shopScrollMax = 0;
+    this.shopDragActive = false;
+    this.shopWasDragged = false;
+    this.setupShopSwipe();
     const w = this.scale.width;
     const h = this.scale.height;
 
@@ -1348,7 +1356,8 @@ export class UIScene extends Phaser.Scene {
           btnX + btnW / 2, btnY + btnH / 2,
           btnW, btnH, 0x000000, 0,
         ).setScrollFactor(0).setDepth(205).setInteractive();
-        hit.on('pointerdown', () => {
+        hit.on('pointerup', () => {
+          if (this.shopWasDragged) return;
           EventBus.emit('buy-item', item.id);
         });
         this.addShopElement(hit);
@@ -1620,7 +1629,8 @@ export class UIScene extends Phaser.Scene {
             btnX + btnW / 2, btnY + btnH / 2,
             btnW, btnH, 0x000000, 0,
           ).setScrollFactor(0).setDepth(205).setInteractive();
-          hit.on('pointerdown', () => {
+          hit.on('pointerup', () => {
+            if (this.shopWasDragged) return;
             EventBus.emit('buy-ship', { shipId: s.id, cost: s.cost });
           });
           this.addShopElement(hit);
@@ -1636,6 +1646,43 @@ export class UIScene extends Phaser.Scene {
     // Snap open/close — no slide animation. renderShopContent() handles
     // build (when open) and tear-down (when closed).
     this.renderShopContent();
+  }
+
+  /** Install pointer drag listeners so users can swipe through shop cards
+   *  (touch or mouse drag). Only reacts while the shop is open and the
+   *  pointer is in the shop panel area. */
+  private setupShopSwipe(): void {
+    const DRAG_THRESHOLD = 6;
+
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (!this.shopOpen) return;
+      const panelTop = this.shopPanelTop();
+      if (p.y < panelTop + 60) return; // let tabs handle their own clicks
+      this.shopDragActive = true;
+      this.shopWasDragged = false;
+      this.shopDragStartX = p.x;
+      this.shopDragStartScroll = this.shopScrollX;
+    });
+
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (!this.shopDragActive) return;
+      const dx = p.x - this.shopDragStartX;
+      if (!this.shopWasDragged && Math.abs(dx) > DRAG_THRESHOLD) {
+        this.shopWasDragged = true;
+      }
+      if (this.shopWasDragged) {
+        this.shopScrollX = Phaser.Math.Clamp(
+          this.shopDragStartScroll - dx, 0, this.shopScrollMax,
+        );
+        this.renderShopContent();
+      }
+    });
+
+    this.input.on('pointerup', () => {
+      this.shopDragActive = false;
+      // Keep shopWasDragged true for a tick so BUY pointerup ignores the gesture
+      this.time.delayedCall(30, () => { this.shopWasDragged = false; });
+    });
   }
 
   // ========== GAME OVER ==========

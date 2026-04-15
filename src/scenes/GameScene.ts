@@ -29,6 +29,15 @@ interface Island {
   rotation: number;
 }
 
+/** Cover zones are forest/kelp patches on water. Ships sailing through are
+ *  hidden from enemy view unless an enemy is close enough to peer in. */
+interface CoverZone {
+  x: number;
+  y: number;
+  radius: number;
+  trees: { x: number; y: number; size: number; kind: 'tree' | 'kelp' }[];
+}
+
 interface WaveStrip {
   yOffset: number;
   speed: number;
@@ -59,7 +68,9 @@ export class GameScene extends Phaser.Scene {
 
   // Terrain
   private islands: Island[] = [];
+  private coverZones: CoverZone[] = [];
   private terrainGraphics!: Phaser.GameObjects.Graphics;
+  private coverGraphics!: Phaser.GameObjects.Graphics;
 
   // Ocean
   private oceanTile!: Phaser.GameObjects.TileSprite;
@@ -152,6 +163,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.generateIslands(mapW, mapH);
+    this.generateCoverZones(mapW, mapH);
     this.generateWaves(mapH);
 
     if (this.isMultiplayer) {
@@ -448,6 +460,8 @@ export class GameScene extends Phaser.Scene {
 
     // Layer 2: Terrain (islands, rocks)
     this.terrainGraphics = this.add.graphics().setDepth(3);
+    // Cover zones sit above ships (depth 4-6) so foliage hides units inside
+    this.coverGraphics = this.add.graphics().setDepth(12);
     this.drawTerrain();
 
     // Layer 9: Safe zone overlay
@@ -722,6 +736,133 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  /** Hide enemy ships that the local player's team cannot currently see.
+   *  Rules:
+   *  - Always visible: the player's own ship and allies (team match).
+   *  - Ship in a cover zone: only visible if a friendly is within 180px.
+   *  - Otherwise: visible if inside any vision source's radius. */
+  private applyVisionFilter(visionSources: { x: number; y: number; range: number }[]): void {
+    if (!this.player) return;
+    const myTeam = this.player.team;
+    const allShips: Ship[] = [
+      this.player,
+      ...this.allies,
+      ...this.enemies,
+      ...this.pirateNPCs,
+      ...this.pirateBosses,
+    ];
+    for (const s of allShips) {
+      if (!s || s.isDead) continue;
+      if (s.team === myTeam) {
+        s.setHiddenByFog(false);
+        continue;
+      }
+      const inCover = this.isInCover(s.x, s.y);
+      const revealRange = inCover ? 180 : 0;
+      let seen = false;
+
+      if (inCover) {
+        // Needs a close friendly to peek in
+        for (const src of visionSources) {
+          const dx = src.x - s.x;
+          const dy = src.y - s.y;
+          if (dx * dx + dy * dy <= revealRange * revealRange) { seen = true; break; }
+        }
+      } else {
+        for (const src of visionSources) {
+          const dx = src.x - s.x;
+          const dy = src.y - s.y;
+          if (dx * dx + dy * dy <= src.range * src.range) { seen = true; break; }
+        }
+      }
+      s.setHiddenByFog(!seen);
+    }
+  }
+
+  // ========== COVER ZONES (vision-blocking foliage on water) ==========
+
+  private generateCoverZones(mapW: number, mapH: number): void {
+    // Place ~6 cover patches in mid-map so both teams can flank through them.
+    // Avoid the base exclusion strips (bottom 15% and top 15%).
+    const candidateSpots: [number, number, number][] = [
+      [0.20, 0.35, 90],
+      [0.80, 0.35, 90],
+      [0.20, 0.65, 90],
+      [0.80, 0.65, 90],
+      [0.40, 0.48, 75],
+      [0.60, 0.52, 75],
+    ];
+    for (const [fx, fy, r] of candidateSpots) {
+      const cx = mapW * fx;
+      const cy = mapH * fy;
+      // Skip if this patch overlaps an island (water only)
+      const blocked = this.islands.some(isl => {
+        const d = Math.hypot(isl.x - cx, isl.y - cy);
+        return d < isl.radius + r * 0.5;
+      });
+      if (blocked) continue;
+
+      const trees: CoverZone['trees'] = [];
+      const count = 14 + Math.floor(this.srand(0, 8));
+      for (let i = 0; i < count; i++) {
+        const angle = this.srand(0, Math.PI * 2);
+        const dist = this.srand(0, r * 0.95);
+        trees.push({
+          x: cx + Math.cos(angle) * dist,
+          y: cy + Math.sin(angle) * dist,
+          size: this.srand(6, 11),
+          kind: Math.random() < 0.7 ? 'tree' : 'kelp',
+        });
+      }
+      this.coverZones.push({ x: cx, y: cy, radius: r, trees });
+    }
+  }
+
+  private drawCoverZones(): void {
+    const g = this.coverGraphics;
+    g.clear();
+    for (const z of this.coverZones) {
+      // Soft tinted circle hinting the cover extent
+      g.fillStyle(0x1B3A2E, 0.28);
+      g.fillCircle(z.x, z.y, z.radius);
+      g.lineStyle(1.5, 0x0F261C, 0.4);
+      g.strokeCircle(z.x, z.y, z.radius);
+
+      // Draw foliage/kelp
+      for (const t of z.trees) {
+        if (t.kind === 'tree') {
+          // Trunk
+          g.fillStyle(0x4A2E1A, 0.9);
+          g.fillRect(t.x - 1, t.y, 2, t.size * 0.45);
+          // Canopy — layered discs
+          g.fillStyle(0x0F3B22, 0.95);
+          g.fillCircle(t.x, t.y, t.size);
+          g.fillStyle(0x1E5A36, 0.95);
+          g.fillCircle(t.x - t.size * 0.25, t.y - t.size * 0.2, t.size * 0.7);
+          g.fillStyle(0x2E7A4A, 0.9);
+          g.fillCircle(t.x - t.size * 0.15, t.y - t.size * 0.35, t.size * 0.45);
+        } else {
+          // Kelp — wavy vertical strokes
+          g.fillStyle(0x1E5A36, 0.7);
+          g.fillCircle(t.x, t.y, t.size * 0.7);
+          g.lineStyle(2, 0x2E7A4A, 0.8);
+          g.lineBetween(t.x, t.y - t.size, t.x + t.size * 0.3, t.y + t.size);
+          g.lineBetween(t.x - t.size * 0.3, t.y - t.size * 0.8, t.x, t.y + t.size);
+        }
+      }
+    }
+  }
+
+  /** Returns true if the world-space point is inside any cover zone. */
+  private isInCover(x: number, y: number): boolean {
+    for (const z of this.coverZones) {
+      const dx = z.x - x;
+      const dy = z.y - y;
+      if (dx * dx + dy * dy <= z.radius * z.radius) return true;
+    }
+    return false;
+  }
+
   private createIsland(x: number, y: number, radius: number, type: Island['type']): Island {
     // Pre-compute irregular shape vertices for natural look
     const segments = 18;
@@ -823,6 +964,10 @@ export class GameScene extends Phaser.Scene {
         this.drawIsland(g, island);
       }
     }
+
+    // Cover zones go on a separate graphics layer above ships so foliage
+    // visually overlaps units inside (enemies feel hidden under the canopy).
+    this.drawCoverZones();
   }
 
   private drawIslandShadow(g: Phaser.GameObjects.Graphics, island: Island): void {
@@ -1236,6 +1381,10 @@ export class GameScene extends Phaser.Scene {
       }
     }
     this.fog.update(this.cameras.main, visionSources);
+
+    // Per-ship visibility filter: enemies outside fog vision OR hidden in
+    // cover (unless a friendly is near enough to peek) become invisible.
+    this.applyVisionFilter(visionSources);
 
     // === Three.js 3D render sync ===
     if (this.three) {
