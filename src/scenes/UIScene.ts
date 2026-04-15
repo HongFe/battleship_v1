@@ -250,7 +250,7 @@ export class UIScene extends Phaser.Scene {
     container.add(bg);
 
     const arrow = this.add.text(size / 2, size / 2, '▴', {
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       fontSize: '16px',
       color: '#F5D97A',
     }).setOrigin(0.5);
@@ -543,7 +543,7 @@ export class UIScene extends Phaser.Scene {
     const h = this.scale.height;
     const t = this.add.text(w / 2, h * 0.18, message, {
       fontSize: '16px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color,
       fontStyle: 'bold',
       stroke: '#000000',
@@ -598,7 +598,7 @@ export class UIScene extends Phaser.Scene {
       const skill = gs.player.config?.skill;
       const maxCd = skill?.cooldown ?? 1;
       const ratio = Phaser.Math.Clamp(cd / maxCd, 0, 1);
-      const label = skill?.displayName ?? 'SKILL';
+      const label = skill?.displayName ?? '스킬';
       this.drawSkillButton(ratio, label);
       this.skillCooldownText.setText(cd > 0 ? `${Math.ceil(cd)}s` : '');
     }
@@ -753,12 +753,12 @@ export class UIScene extends Phaser.Scene {
 
     this.skillButtonGfx = this.add.graphics().setScrollFactor(0).setDepth(100);
 
-    this.skillButtonText = this.add.text(btnX + btnSize / 2, btnY + btnSize / 2 - 4, 'SKILL', {
-      fontSize: '11px', fontFamily: 'monospace', color: '#FFFFFF', fontStyle: 'bold',
+    this.skillButtonText = this.add.text(btnX + btnSize / 2, btnY + btnSize / 2 - 4, '스킬', {
+      fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFFFFF', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
     this.skillCooldownText = this.add.text(btnX + btnSize / 2, btnY + btnSize / 2 + 10, '', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#FFDD66', fontStyle: 'bold',
+      fontSize: '13px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFDD66', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
     const hit = this.add.rectangle(btnX + btnSize / 2, btnY + btnSize / 2, btnSize, btnSize, 0x000000, 0)
@@ -772,7 +772,7 @@ export class UIScene extends Phaser.Scene {
     this.skillButtonGfx.setData('x', btnX);
     this.skillButtonGfx.setData('y', btnY);
     this.skillButtonGfx.setData('size', btnSize);
-    this.drawSkillButton(0, 'SKILL');
+    this.drawSkillButton(0, '스킬');
   }
 
   private drawSkillButton(cooldownRatio: number, label: string): void {
@@ -879,7 +879,7 @@ export class UIScene extends Phaser.Scene {
       // Abbreviated label (shown as fallback when no icon texture)
       const txt = this.add.text(x + this.slotSize / 2, slotY + this.slotSize - 8, '', {
         fontSize: count >= 11 ? '8px' : '9px',
-        fontFamily: 'monospace', color: '#E8F4FF',
+        fontFamily: '"Noto Sans KR", sans-serif', color: '#E8F4FF',
         align: 'center', wordWrap: { width: this.slotSize - 4 }, fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(102);
@@ -981,8 +981,8 @@ export class UIScene extends Phaser.Scene {
     g.lineStyle(2, 0xC47D0E, 1);
     g.strokeRoundedRect(btnX, btnY, btnSize, btnSize, 10);
 
-    this.add.text(btnX + btnSize / 2, btnY + btnSize / 2, 'SHOP', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#0A1628', fontStyle: 'bold',
+    this.add.text(btnX + btnSize / 2, btnY + btnSize / 2, '상점', {
+      fontSize: '13px', fontFamily: '"Noto Sans KR", sans-serif', color: '#0A1628', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
     const hitArea = this.add.rectangle(
@@ -1040,7 +1040,7 @@ export class UIScene extends Phaser.Scene {
 
     // Title
     const title = this.add.text(15, panelTop + 12, '⚓ NAVAL SHOP', {
-      fontSize: '20px', fontFamily: 'monospace', color: '#F5A623', fontStyle: 'bold',
+      fontSize: '20px', fontFamily: '"Noto Sans KR", sans-serif', color: '#F5A623', fontStyle: 'bold',
     }).setScrollFactor(0).setDepth(202);
     this.addShopElement(title);
 
@@ -1055,7 +1055,7 @@ export class UIScene extends Phaser.Scene {
     this.addShopElement(closeBg);
 
     const closeText = this.add.text(closeX, closeY, 'X', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#FFFFFF', fontStyle: 'bold',
+      fontSize: '18px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFFFFF', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(203);
     this.addShopElement(closeText);
 
@@ -1072,10 +1072,10 @@ export class UIScene extends Phaser.Scene {
 
   private renderTabs(w: number, panelTop: number): void {
     const tabs: { cat: ShopCategory; label: string }[] = [
-      { cat: 'weapon', label: 'WEAPONS' },
-      { cat: 'armor', label: 'ARMOR' },
-      { cat: 'special', label: 'SPECIAL' },
-      { cat: 'ships', label: 'SHIPS' },
+      { cat: 'weapon', label: '무기' },
+      { cat: 'armor', label: '방어구' },
+      { cat: 'special', label: '특수' },
+      { cat: 'ships', label: '배' },
     ];
     const tabW = (w - 30) / tabs.length;
     const tabY = panelTop + 50;
@@ -1095,7 +1095,7 @@ export class UIScene extends Phaser.Scene {
       this.addShopElement(bg);
 
       const text = this.add.text(x + tabW / 2, tabY + 15, t.label, {
-        fontSize: '12px', fontFamily: 'monospace',
+        fontSize: '12px', fontFamily: '"Noto Sans KR", sans-serif',
         color: isActive ? '#0A1628' : '#8BA8CC', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(203);
       this.addShopElement(text);
@@ -1136,8 +1136,10 @@ export class UIScene extends Phaser.Scene {
       return;
     }
 
-    // Filter items by base type
-    let items = Object.values(this.balance.items).filter(i => i.type === this.currentCategory);
+    // Filter items by base type and sort cheapest -> most expensive (left to right)
+    let items = Object.values(this.balance.items)
+      .filter(i => i.type === this.currentCategory)
+      .sort((a, b) => a.cost - b.cost);
 
     let contentTop = panelTop + 95;
     if (this.currentCategory === 'weapon') {
@@ -1191,7 +1193,7 @@ export class UIScene extends Phaser.Scene {
       this.addShopElement(bg);
 
       const text = this.add.text(px + pillW / 2, py + pillH / 2, p.label, {
-        fontSize: '11px', fontFamily: 'monospace',
+        fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif',
         color: isActive ? '#0A1208' : '#D4A847', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(203);
       this.addShopElement(text);
@@ -1244,7 +1246,7 @@ export class UIScene extends Phaser.Scene {
       this.addShopElement(bg);
 
       const text = this.add.text(px + pillW / 2, py + pillH / 2, p.label, {
-        fontSize: '11px', fontFamily: 'monospace',
+        fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif',
         color: isActive ? '#FFFFFF' : '#AA8888', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(203);
       this.addShopElement(text);
@@ -1320,7 +1322,7 @@ export class UIScene extends Phaser.Scene {
 
       // Name
       this.addShopElement(this.add.text(cx + cardW / 2, cy + 76, item.displayName, {
-        fontSize: '11px', fontFamily: 'monospace',
+        fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif',
         color: canAfford ? '#E8F4FF' : '#666666', fontStyle: 'bold',
         wordWrap: { width: cardW - 8 }, align: 'center',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
@@ -1343,13 +1345,13 @@ export class UIScene extends Phaser.Scene {
         }
       }
       this.addShopElement(this.add.text(cx + cardW / 2, cy + 110, statsLine, {
-        fontSize: '10px', fontFamily: 'monospace', color: '#FFAA66',
+        fontSize: '10px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFAA66',
         align: 'center',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
 
-      // Cost
-      this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 36, `${item.cost}g`, {
-        fontSize: '14px', fontFamily: 'monospace',
+      // Cost (sits clearly above the BUY button)
+      this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 56, `${item.cost}g`, {
+        fontSize: '14px', fontFamily: '"Noto Sans KR", sans-serif',
         color: canAfford ? '#FFD700' : '#666666', fontStyle: 'bold',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
 
@@ -1362,8 +1364,8 @@ export class UIScene extends Phaser.Scene {
       btnBg.fillStyle(canAfford ? 0x3DC47E : 0x444444, 0.95);
       btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 5);
       this.addShopElement(btnBg);
-      this.addShopElement(this.add.text(btnX + btnW / 2, btnY + btnH / 2, 'BUY', {
-        fontSize: '13px', fontFamily: 'monospace',
+      this.addShopElement(this.add.text(btnX + btnW / 2, btnY + btnH / 2, '구매', {
+        fontSize: '13px', fontFamily: '"Noto Sans KR", sans-serif',
         color: canAfford ? '#0A1628' : '#888888', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(204));
       if (canAfford) {
@@ -1420,7 +1422,7 @@ export class UIScene extends Phaser.Scene {
       this.addShopElement(lBg);
 
       this.addShopElement(this.add.text(arrowSize / 2 + 4, arrowY, '◀', {
-        fontSize: '20px', fontFamily: 'monospace', color: '#F5A623', fontStyle: 'bold',
+        fontSize: '20px', fontFamily: '"Noto Sans KR", sans-serif', color: '#F5A623', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(207));
 
       const lHit = this.add.rectangle(arrowSize / 2 + 4, arrowY, arrowSize, arrowSize, 0x000000, 0)
@@ -1444,7 +1446,7 @@ export class UIScene extends Phaser.Scene {
       this.addShopElement(rBg);
 
       this.addShopElement(this.add.text(rX, arrowY, '▶', {
-        fontSize: '20px', fontFamily: 'monospace', color: '#F5A623', fontStyle: 'bold',
+        fontSize: '20px', fontFamily: '"Noto Sans KR", sans-serif', color: '#F5A623', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(207));
 
       const rHit = this.add.rectangle(rX, arrowY, arrowSize, arrowSize, 0x000000, 0)
@@ -1473,7 +1475,8 @@ export class UIScene extends Phaser.Scene {
     ];
     let ships = order
       .filter(id => this.balance.ships[id])
-      .map(id => ({ id, cost: this.balance.ships[id].cost ?? 0 }));
+      .map(id => ({ id, cost: this.balance.ships[id].cost ?? 0 }))
+      .sort((a, b) => a.cost - b.cost);
 
     // Filter by nation if selected
     if (this.currentNation !== 'all') {
@@ -1616,13 +1619,13 @@ export class UIScene extends Phaser.Scene {
 
       // Bottom: cost or EQUIPPED + buy button
       if (isCurrent) {
-        this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 14, 'EQUIPPED', {
-          fontSize: '11px', fontFamily: 'monospace', color: '#FFDD66', fontStyle: 'bold',
+        this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 14, '장착중', {
+          fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFDD66', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(203));
       } else {
         // Cost
         this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 32, `${s.cost}g`, {
-          fontSize: '12px', fontFamily: 'monospace',
+          fontSize: '12px', fontFamily: '"Noto Sans KR", sans-serif',
           color: canAfford ? '#FFD700' : '#666666', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(203));
 
@@ -1635,8 +1638,8 @@ export class UIScene extends Phaser.Scene {
         buyBg.fillStyle(canAfford ? 0x3DC47E : 0x444444, 0.95);
         buyBg.fillRoundedRect(btnX, btnY, btnW, btnH, 5);
         this.addShopElement(buyBg);
-        this.addShopElement(this.add.text(btnX + btnW / 2, btnY + btnH / 2, 'BUY', {
-          fontSize: '12px', fontFamily: 'monospace',
+        this.addShopElement(this.add.text(btnX + btnW / 2, btnY + btnH / 2, '구매', {
+          fontSize: '12px', fontFamily: '"Noto Sans KR", sans-serif',
           color: canAfford ? '#0A1628' : '#888888', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(204));
         if (canAfford) {
@@ -1712,7 +1715,7 @@ export class UIScene extends Phaser.Scene {
     // Message log — 4 most recent messages, top-left, above minimap area
     this.chatText = this.add.text(10, 44, '', {
       fontSize: '12px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#FFFFFF',
       backgroundColor: '#0A1628AA',
       padding: { left: 6, right: 6, top: 3, bottom: 3 },
@@ -1876,7 +1879,7 @@ export class UIScene extends Phaser.Scene {
     });
 
     // Massive title
-    const title = this.add.text(w / 2, h * 0.32, data.won ? 'VICTORY' : 'DEFEAT', {
+    const title = this.add.text(w / 2, h * 0.32, data.won ? '승리' : '패배', {
       fontFamily: Fonts.display,
       fontSize: '80px',
       color: data.won ? Colors.brightGold : Colors.bloodRed,
@@ -1930,10 +1933,10 @@ export class UIScene extends Phaser.Scene {
 
     // Stats with icons (animated reveal)
     const statsItems = [
-      { icon: '⚔', label: 'KILLS', value: data.kills.toString() },
-      { icon: '⚜', label: 'GOLD', value: data.gold.toString() },
-      { icon: '🌊', label: 'TIDES', value: data.placement.toString() },
-      { icon: '⏱', label: 'TIME', value: `${Math.floor(data.time / 60)}:${Math.floor(data.time % 60).toString().padStart(2, '0')}` },
+      { icon: '⚔', label: '킬수', value: data.kills.toString() },
+      { icon: '⚜', label: '골드', value: data.gold.toString() },
+      { icon: '🌊', label: '라운드', value: data.placement.toString() },
+      { icon: '⏱', label: '시간', value: `${Math.floor(data.time / 60)}:${Math.floor(data.time % 60).toString().padStart(2, '0')}` },
     ];
 
     statsItems.forEach((stat, i) => {
@@ -1990,7 +1993,7 @@ export class UIScene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(0).setDepth(502).setAlpha(0);
     this.gameOverContainer.add(btnLabel);
 
-    const btnSub = this.add.text(w / 2, btnY + 14, 'PLAY AGAIN', {
+    const btnSub = this.add.text(w / 2, btnY + 14, '다시 시작', {
       fontFamily: Fonts.heading,
       fontSize: '11px',
       color: Colors.brightGold,

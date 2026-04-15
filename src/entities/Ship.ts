@@ -15,8 +15,12 @@ const STRONG_NPC_SHIPS = new Set([
 // Some hand-painted ship textures aren't drawn pointing up. Apply a
 // per-ship rotation offset (in radians) so forward == heading direction.
 const SHIP_SPRITE_ROT_OFFSET: Record<string, number> = {
-  pirate: Math.PI,          // bow drawn at bottom
-  panokseon: Math.PI / 2,   // drawn broadside (horizontal)
+  pirate: Math.PI,           // bow drawn at bottom
+  panokseon: Math.PI / 2,    // drawn broadside (horizontal)
+  hood: -Math.PI / 2,        // drawn horizontal
+  submarine: -Math.PI / 2,   // drawn horizontal
+  yamato: -Math.PI / 2,      // drawn horizontal
+  medic: -Math.PI / 2,       // drawn broadside
 };
 
 export class Ship extends Phaser.Physics.Arcade.Sprite {

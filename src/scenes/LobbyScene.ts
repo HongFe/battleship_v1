@@ -47,9 +47,9 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     // Title
-    this.add.text(w / 2, 40, '⚓ MULTIPLAYER LOBBY', {
+    this.add.text(w / 2, 40, '⚓ 멀티플레이어 로비', {
       fontSize: '24px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#F5A623',
       fontStyle: 'bold',
     }).setOrigin(0.5, 0);
@@ -57,7 +57,7 @@ export class LobbyScene extends Phaser.Scene {
     // Status line
     this.statusText = this.add.text(w / 2, h - 40, '', {
       fontSize: '12px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#8BA8CC',
     }).setOrigin(0.5, 0.5);
 
@@ -199,19 +199,19 @@ export class LobbyScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    this.addUI(this.add.text(w / 2, h * 0.25, 'CHOOSE OPTION', {
+    this.addUI(this.add.text(w / 2, h * 0.25, '모드 선택', {
       fontSize: '18px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#E8F4FF',
     }).setOrigin(0.5));
 
     // Create Room button
-    this.makeButton(w / 2, h * 0.4, 240, 56, 'CREATE ROOM', 0x3DC47E, () => {
+    this.makeButton(w / 2, h * 0.4, 240, 56, '방 만들기', 0x3DC47E, () => {
       this.setMode('create');
     });
 
     // Join Room button
-    this.makeButton(w / 2, h * 0.4 + 80, 240, 56, 'JOIN ROOM', 0x4A9ECC, () => {
+    this.makeButton(w / 2, h * 0.4 + 80, 240, 56, '방 참가', 0x4A9ECC, () => {
       this.setMode('join');
     });
   }
@@ -223,18 +223,18 @@ export class LobbyScene extends Phaser.Scene {
     const h = this.scale.height;
 
     const label = (y: number, txt: string) => this.addUI(this.add.text(w / 2, y, txt, {
-      fontSize: '13px', fontFamily: 'monospace', color: '#8BA8CC',
+      fontSize: '13px', fontFamily: '"Noto Sans KR", sans-serif', color: '#8BA8CC',
     }).setOrigin(0.5));
 
     // Captain name
-    label(h * 0.22, 'CAPTAIN NAME');
+    label(h * 0.22, '캡틴 이름');
     this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.22 + 16, 240, 40, 'Captain', 16);
 
     // Room title
-    label(h * 0.42, 'ROOM TITLE');
+    label(h * 0.42, '방 제목');
     this.titleInput = this.createHtmlInput(w / 2 - 120, h * 0.42 + 16, 240, 40, '함대 이름', 24);
 
-    this.makeButton(w / 2, h * 0.65, 240, 56, 'CREATE', 0x3DC47E, () => {
+    this.makeButton(w / 2, h * 0.65, 240, 56, '만들기', 0x3DC47E, () => {
       if (!NetworkManager.connected) {
         this.setStatus('서버 연결이 끊겼습니다. 새로고침 후 다시 시도하세요.');
         return;
@@ -252,7 +252,7 @@ export class LobbyScene extends Phaser.Scene {
       });
     });
 
-    this.makeButton(w / 2, h * 0.65 + 70, 240, 50, 'BACK', 0x666666, () => {
+    this.makeButton(w / 2, h * 0.65 + 70, 240, 50, '뒤로', 0x666666, () => {
       this.setMode('menu');
     });
   }
@@ -264,17 +264,17 @@ export class LobbyScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    this.addUI(this.add.text(w / 2, h * 0.15, 'OPEN ROOMS', {
+    this.addUI(this.add.text(w / 2, h * 0.15, '열린 방', {
       fontSize: '18px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#E8F4FF',
       fontStyle: 'bold',
     }).setOrigin(0.5));
 
     // Name input (persists between refreshes via pendingJoinName)
-    this.addUI(this.add.text(w / 2, h * 0.15 + 28, 'YOUR NAME', {
+    this.addUI(this.add.text(w / 2, h * 0.15 + 28, '내 이름', {
       fontSize: '10px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#8BA8CC',
     }).setOrigin(0.5));
     if (!this.nameInput) {
@@ -301,7 +301,7 @@ export class LobbyScene extends Phaser.Scene {
     if (this.roomList.length === 0) {
       this.addUI(this.add.text(w / 2, listY + listH / 2, '열린 방이 없습니다\n방을 만들어보세요', {
         fontSize: '13px',
-        fontFamily: 'monospace',
+        fontFamily: '"Noto Sans KR", sans-serif',
         color: '#6A7A94',
         align: 'center',
       }).setOrigin(0.5));
@@ -321,7 +321,7 @@ export class LobbyScene extends Phaser.Scene {
         const titleText = r.title || '함대';
         this.addUI(this.add.text(listX + 24, ry + rowH / 2 - 3, titleText, {
           fontSize: '14px',
-          fontFamily: 'monospace',
+          fontFamily: '"Noto Sans KR", sans-serif',
           color: '#E8F4FF',
           fontStyle: 'bold',
         }).setOrigin(0, 0.5));
@@ -329,7 +329,7 @@ export class LobbyScene extends Phaser.Scene {
         // Host name (small, below title)
         this.addUI(this.add.text(listX + 24, ry + rowH - 12, `★ ${r.hostName}`, {
           fontSize: '10px',
-          fontFamily: 'monospace',
+          fontFamily: '"Noto Sans KR", sans-serif',
           color: '#8BA8CC',
         }).setOrigin(0, 0.5));
 
@@ -338,7 +338,7 @@ export class LobbyScene extends Phaser.Scene {
         this.addUI(this.add.text(listX + listW - 100, ry + rowH / 2 - 3,
           `${r.playerCount}/${r.maxPlayers}`, {
           fontSize: '13px',
-          fontFamily: 'monospace',
+          fontFamily: '"Noto Sans KR", sans-serif',
           color: pcColor,
           fontStyle: 'bold',
         }).setOrigin(0, 0.5));
@@ -350,9 +350,9 @@ export class LobbyScene extends Phaser.Scene {
         bg.fillStyle(0x4A9ECC, 1);
         bg.fillRoundedRect(btnX - 24, btnY - 12, 48, 24, 5);
         this.addUI(bg);
-        this.addUI(this.add.text(btnX, btnY, 'JOIN', {
+        this.addUI(this.add.text(btnX, btnY, '참가', {
           fontSize: '11px',
-          fontFamily: 'monospace',
+          fontFamily: '"Noto Sans KR", sans-serif',
           color: '#FFFFFF',
           fontStyle: 'bold',
         }).setOrigin(0.5));
@@ -370,10 +370,10 @@ export class LobbyScene extends Phaser.Scene {
 
     // Bottom buttons: Refresh, Back (public rooms only — no manual code)
     const btnY = h * 0.30 + h * 0.50 + 30;
-    this.makeButton(w / 2 - 65, btnY, 120, 44, '↻ REFRESH', 0x2E6DA4, () => {
+    this.makeButton(w / 2 - 65, btnY, 120, 44, '↻ 새로고침', 0x2E6DA4, () => {
       NetworkManager.listRooms();
     });
-    this.makeButton(w / 2 + 65, btnY, 120, 44, 'BACK', 0x444444, () => {
+    this.makeButton(w / 2 + 65, btnY, 120, 44, '뒤로', 0x444444, () => {
       this.setMode('menu');
     });
   }
@@ -390,23 +390,23 @@ export class LobbyScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    this.addUI(this.add.text(w / 2, h * 0.2, 'ENTER YOUR NAME', {
+    this.addUI(this.add.text(w / 2, h * 0.2, '이름 입력', {
       fontSize: '14px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#E8F4FF',
     }).setOrigin(0.5));
 
     this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.25, 240, 40, 'Captain', 16);
 
-    this.addUI(this.add.text(w / 2, h * 0.4, 'ROOM CODE', {
+    this.addUI(this.add.text(w / 2, h * 0.4, '방 코드', {
       fontSize: '14px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#E8F4FF',
     }).setOrigin(0.5));
 
     this.roomInput = this.createHtmlInput(w / 2 - 120, h * 0.45, 240, 50, 'XXXX', 4, true);
 
-    this.makeButton(w / 2, h * 0.6, 240, 56, 'JOIN', 0x4A9ECC, () => {
+    this.makeButton(w / 2, h * 0.6, 240, 56, '참가', 0x4A9ECC, () => {
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
       const roomId = sanitize(this.roomInput?.value || '').toUpperCase();
       if (!/^[A-Z0-9]{4}$/.test(roomId)) {
@@ -416,7 +416,7 @@ export class LobbyScene extends Phaser.Scene {
       NetworkManager.joinRoom(roomId, name);
     });
 
-    this.makeButton(w / 2, h * 0.6 + 70, 240, 50, 'BACK', 0x666666, () => {
+    this.makeButton(w / 2, h * 0.6 + 70, 240, 50, '뒤로', 0x666666, () => {
       this.setMode('menu');
     });
   }
@@ -434,14 +434,14 @@ export class LobbyScene extends Phaser.Scene {
     const displayTitle = room.title || '함대';
     this.addUI(this.add.text(w / 2, 85, displayTitle, {
       fontSize: '22px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#FFD700',
       fontStyle: 'bold',
     }).setOrigin(0.5));
 
     this.addUI(this.add.text(w / 2, 115, '친구들은 JOIN ROOM 목록에서 이 방을 찾을 수 있어요', {
       fontSize: '10px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#8BA8CC',
     }).setOrigin(0.5));
 
@@ -460,7 +460,7 @@ export class LobbyScene extends Phaser.Scene {
       const isReady = me.ready;
       this.makeButton(
         w / 2, readyY, 240, 50,
-        isReady ? '✓ READY' : 'NOT READY',
+        isReady ? '✓ 준비 완료' : '준비 안됨',
         isReady ? 0x3DC47E : 0xE84545,
         () => NetworkManager.setReady(!isReady),
       );
@@ -470,16 +470,16 @@ export class LobbyScene extends Phaser.Scene {
         const allReady = room.players.every(p => p.ready) && room.players.length >= 2;
         this.makeButton(
           w / 2, readyY + 65, 240, 56,
-          allReady ? 'START GAME' : `WAITING... (${room.players.length}/2+)`,
+          allReady ? '게임 시작' : `대기 중... (${room.players.length}/2+)`,
           allReady ? 0xF5A623 : 0x444444,
           () => {
             if (allReady) NetworkManager.startGame();
           },
         );
       } else {
-        this.addUI(this.add.text(w / 2, readyY + 65, 'Waiting for host to start...', {
+        this.addUI(this.add.text(w / 2, readyY + 65, '호스트가 시작할 때까지 대기 중...', {
           fontSize: '12px',
-          fontFamily: 'monospace',
+          fontFamily: '"Noto Sans KR", sans-serif',
           color: '#8BA8CC',
         }).setOrigin(0.5));
       }
@@ -488,7 +488,7 @@ export class LobbyScene extends Phaser.Scene {
 
   private drawTeamPanel(x: number, y: number, w: number, h: number, team: number, room: RoomData): void {
     const teamColor = team === 0 ? 0x4A8ECC : 0xCC4A4A;
-    const teamLabel = team === 0 ? 'BLUE FLEET' : 'RED FLEET';
+    const teamLabel = team === 0 ? '청군 함대' : '적군 함대';
     const teamPlayers = room.players.filter(p => p.team === team);
 
     const g = this.add.graphics();
@@ -500,14 +500,14 @@ export class LobbyScene extends Phaser.Scene {
 
     this.addUI(this.add.text(x + w / 2, y + 12, teamLabel, {
       fontSize: '14px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#E8F4FF',
       fontStyle: 'bold',
     }).setOrigin(0.5, 0));
 
     this.addUI(this.add.text(x + w / 2, y + 32, `${teamPlayers.length}/2`, {
       fontSize: '11px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#8BA8CC',
     }).setOrigin(0.5, 0));
 
@@ -527,21 +527,21 @@ export class LobbyScene extends Phaser.Scene {
       const statusColor = p.ready ? '#3DC47E' : '#666666';
       this.addUI(this.add.text(x + 16, py + 15, status, {
         fontSize: '14px',
-        fontFamily: 'monospace',
+        fontFamily: '"Noto Sans KR", sans-serif',
         color: statusColor,
         fontStyle: 'bold',
       }).setOrigin(0, 0.5));
 
       this.addUI(this.add.text(x + 36, py + 15, p.name + (isHost ? ' ★' : ''), {
         fontSize: '11px',
-        fontFamily: 'monospace',
+        fontFamily: '"Noto Sans KR", sans-serif',
         color: isMe ? '#FFDD66' : '#E8F4FF',
         fontStyle: isMe ? 'bold' : 'normal',
       }).setOrigin(0, 0.5));
 
       this.addUI(this.add.text(x + w - 16, py + 15, p.shipId.slice(0, 4).toUpperCase(), {
         fontSize: '9px',
-        fontFamily: 'monospace',
+        fontFamily: '"Noto Sans KR", sans-serif',
         color: '#8BA8CC',
       }).setOrigin(1, 0.5));
     });
@@ -554,9 +554,9 @@ export class LobbyScene extends Phaser.Scene {
       btnG.fillRoundedRect(x + w / 2 - 50, switchY - 12, 100, 24, 6);
       this.addUI(btnG);
 
-      this.addUI(this.add.text(x + w / 2, switchY, 'JOIN', {
+      this.addUI(this.add.text(x + w / 2, switchY, '참가', {
         fontSize: '11px',
-        fontFamily: 'monospace',
+        fontFamily: '"Noto Sans KR", sans-serif',
         color: '#E8F4FF',
         fontStyle: 'bold',
       }).setOrigin(0.5));
@@ -582,7 +582,7 @@ export class LobbyScene extends Phaser.Scene {
 
     this.addUI(this.add.text(cx, cy, label, {
       fontSize: '15px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#FFFFFF',
       fontStyle: 'bold',
     }).setOrigin(0.5));
@@ -632,7 +632,7 @@ export class LobbyScene extends Phaser.Scene {
   private createBackButton(): void {
     const back = this.add.text(20, 20, '← BACK', {
       fontSize: '14px',
-      fontFamily: 'monospace',
+      fontFamily: '"Noto Sans KR", sans-serif',
       color: '#8BA8CC',
       fontStyle: 'bold',
     }).setInteractive({ useHandCursor: true });
