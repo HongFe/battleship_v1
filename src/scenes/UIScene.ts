@@ -973,9 +973,14 @@ export class UIScene extends Phaser.Scene {
     });
   }
 
+  /** Bottom margin so the shop panel clears mobile browser chrome + skill/shop buttons. */
+  private shopPanelBottomMargin(): number {
+    return 90;
+  }
+
   /** Get the y-position where the shop panel begins (top edge). */
   private shopPanelTop(): number {
-    return this.scale.height * 0.55; // panelH = 0.45 * h (much shorter)
+    return this.scale.height * 0.40; // raised so more shop is visible above bottom UI
   }
 
   private createShopOverlay(_w: number, _h: number): void {
@@ -992,7 +997,8 @@ export class UIScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
     const panelTop = this.shopPanelTop();
-    const panelH = h - panelTop;
+    const panelBottomY = h - this.shopPanelBottomMargin();
+    const panelH = panelBottomY - panelTop;
 
     // Dim screen
     const dim = this.add.rectangle(0, 0, w, h, 0x000000, 0.5)
@@ -1097,7 +1103,7 @@ export class UIScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
     const panelTop = this.shopPanelTop();
-    const panelBottom = h - 10;
+    const panelBottom = h - this.shopPanelBottomMargin() - 10;
 
     const gameScene = this.scene.get('GameScene') as any;
     const playerGold = gameScene?.player?.gold ?? 0;
