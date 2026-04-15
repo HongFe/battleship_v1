@@ -17,10 +17,11 @@ const STRONG_NPC_SHIPS = new Set([
 const SHIP_SPRITE_ROT_OFFSET: Record<string, number> = {
   pirate: Math.PI,           // bow drawn at bottom
   panokseon: Math.PI / 2,    // drawn broadside (horizontal)
-  hood: -Math.PI / 2,        // drawn horizontal
-  submarine: -Math.PI / 2,   // drawn horizontal
-  yamato: -Math.PI / 2,      // drawn horizontal
-  medic: -Math.PI / 2,       // drawn broadside
+  hood: -Math.PI / 2,        // drawn horizontal, bow right
+  submarine: -Math.PI / 2,   // drawn horizontal, bow right
+  yamato: -Math.PI / 2,      // drawn horizontal, bow right
+  medic: -Math.PI / 2,       // drawn broadside, bow right
+  carrier: Math.PI / 2,      // drawn horizontal, bow left
 };
 
 export class Ship extends Phaser.Physics.Arcade.Sprite {

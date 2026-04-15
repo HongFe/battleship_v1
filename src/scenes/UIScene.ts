@@ -1003,7 +1003,7 @@ export class UIScene extends Phaser.Scene {
 
   /** Get the y-position where the shop panel begins (top edge). */
   private shopPanelTop(): number {
-    return this.scale.height * 0.40; // raised so more shop is visible above bottom UI
+    return this.scale.height * 0.50; // compact panel — about 40% of viewport
   }
 
   private createShopOverlay(_w: number, _h: number): void {
@@ -1265,10 +1265,10 @@ export class UIScene extends Phaser.Scene {
   }
 
   private renderItemsTab(items: ItemConfig[], w: number, contentTop: number, panelBottom: number, playerGold: number): void {
-    const cardW = 130;
+    const cardW = 100;
     const cardH = panelBottom - contentTop - 16;
-    const gap = 10;
-    const sideMargin = 40; // space for arrow buttons
+    const gap = 8;
+    const sideMargin = 36; // space for arrow buttons
 
     // Total width and clamp scroll
     const totalW = items.length * (cardW + gap) - gap;
@@ -1305,52 +1305,52 @@ export class UIScene extends Phaser.Scene {
       // Icon at top — auto-scale so big PNGs (Whisk 512²) don't blow up the card
       const iconKey = this.iconKeyForItem(item);
       if (iconKey && this.textures.exists(iconKey)) {
-        const icon = this.add.image(cx + cardW / 2, cy + 38, iconKey)
+        const icon = this.add.image(cx + cardW / 2, cy + 30, iconKey)
           .setScrollFactor(0).setDepth(203);
         const iconTex = this.textures.get(iconKey);
         const iconSrc = iconTex?.getSourceImage() as HTMLImageElement | undefined;
         if (iconSrc) {
-          const boxSize = 56; // target icon area (~56px square)
+          const boxSize = 42; // smaller icon for compact card
           const s = boxSize / Math.max(iconSrc.width, iconSrc.height);
           icon.setScale(s);
         } else {
-          icon.setScale(0.85);
+          icon.setScale(0.7);
         }
         if (!canAfford) icon.setAlpha(0.4);
         this.addShopElement(icon);
       }
 
       // Name
-      this.addShopElement(this.add.text(cx + cardW / 2, cy + 76, item.displayName, {
-        fontSize: '11px', fontFamily: '"Noto Sans KR", sans-serif',
+      this.addShopElement(this.add.text(cx + cardW / 2, cy + 58, item.displayName, {
+        fontSize: '10px', fontFamily: '"Noto Sans KR", sans-serif',
         color: canAfford ? '#E8F4FF' : '#666666', fontStyle: 'bold',
-        wordWrap: { width: cardW - 8 }, align: 'center',
+        wordWrap: { width: cardW - 6 }, align: 'center',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
 
-      // Stats line
+      // Stats line — compact Korean labels
       let statsLine = '';
       if (item.type === 'weapon') {
         const wp = item as any;
-        statsLine = `DMG ${wp.damage}\nRNG ${wp.range}\n${wp.attackSpeed.toFixed(1)}/s`;
+        statsLine = `공${wp.damage} 사${wp.range}\n${wp.attackSpeed.toFixed(1)}/s`;
       } else if (item.type === 'armor') {
         const a = item as any;
         const parts: string[] = [];
-        if (a.armorBonus) parts.push(`+${a.armorBonus} ARM`);
-        if (a.hpBonus) parts.push(`+${a.hpBonus} HP`);
-        statsLine = parts.join('\n');
+        if (a.armorBonus) parts.push(`방+${a.armorBonus}`);
+        if (a.hpBonus) parts.push(`HP+${a.hpBonus}`);
+        statsLine = parts.join(' ');
       } else if (item.type === 'special') {
         const s = item as any;
         if (s.speedMultiplier && s.speedMultiplier !== 1) {
-          statsLine = `SPD x${s.speedMultiplier}`;
+          statsLine = `속도 x${s.speedMultiplier}`;
         }
       }
-      this.addShopElement(this.add.text(cx + cardW / 2, cy + 110, statsLine, {
-        fontSize: '10px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFAA66',
+      this.addShopElement(this.add.text(cx + cardW / 2, cy + 92, statsLine, {
+        fontSize: '9px', fontFamily: '"Noto Sans KR", sans-serif', color: '#FFAA66',
         align: 'center',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
 
       // Cost (sits clearly above the BUY button)
-      this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 56, `${item.cost}g`, {
+      this.addShopElement(this.add.text(cx + cardW / 2, cy + cardH - 52, `${item.cost}g`, {
         fontSize: '14px', fontFamily: '"Noto Sans KR", sans-serif',
         color: canAfford ? '#FFD700' : '#666666', fontStyle: 'bold',
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(203));
