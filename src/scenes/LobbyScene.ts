@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { NetworkManager, RoomData, RoomPlayer, RoomSummary } from '../network/NetworkManager';
-import { ShipId } from '../config/types';
 
 type Mode = 'menu' | 'create' | 'join' | 'joinCode' | 'room' | 'connecting' | 'error';
 
@@ -14,7 +13,6 @@ export class LobbyScene extends Phaser.Scene {
   private nameInput: HTMLInputElement | null = null;
   private roomInput: HTMLInputElement | null = null;
   private titleInput: HTMLInputElement | null = null;
-  private passwordInput: HTMLInputElement | null = null;
   private statusText!: Phaser.GameObjects.Text;
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private htmlElements: HTMLElement[] = [];
@@ -189,7 +187,6 @@ export class LobbyScene extends Phaser.Scene {
     this.nameInput = null;
     this.roomInput = null;
     this.titleInput = null;
-    this.passwordInput = null;
   }
 
   private addUI(obj: Phaser.GameObjects.GameObject): void {
@@ -230,22 +227,17 @@ export class LobbyScene extends Phaser.Scene {
     }).setOrigin(0.5));
 
     // Captain name
-    label(h * 0.18, 'CAPTAIN NAME');
-    this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.18 + 16, 240, 36, 'Captain', 16);
+    label(h * 0.22, 'CAPTAIN NAME');
+    this.nameInput = this.createHtmlInput(w / 2 - 120, h * 0.22 + 16, 240, 40, 'Captain', 16);
 
     // Room title
-    label(h * 0.33, 'ROOM TITLE');
-    this.titleInput = this.createHtmlInput(w / 2 - 120, h * 0.33 + 16, 240, 36, '함대 이름', 24);
-
-    // Password (optional)
-    label(h * 0.48, 'PASSWORD (비워두면 공개)');
-    this.passwordInput = this.createHtmlInput(w / 2 - 120, h * 0.48 + 16, 240, 36, '선택 입력', 16);
+    label(h * 0.42, 'ROOM TITLE');
+    this.titleInput = this.createHtmlInput(w / 2 - 120, h * 0.42 + 16, 240, 40, '함대 이름', 24);
 
     this.makeButton(w / 2, h * 0.65, 240, 56, 'CREATE', 0x3DC47E, () => {
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
       const title = sanitize(this.titleInput?.value || '') || `${name}의 방`;
-      const password = (this.passwordInput?.value || '').trim();
-      NetworkManager.createRoom(name, title, password || undefined);
+      NetworkManager.createRoom(name, title);
     });
 
     this.makeButton(w / 2, h * 0.65 + 70, 240, 50, 'BACK', 0x666666, () => {
@@ -321,10 +313,9 @@ export class LobbyScene extends Phaser.Scene {
           fontStyle: 'bold',
         }).setOrigin(0, 0));
 
-        // Title + lock icon (large, center-left)
-        const lock = r.hasPassword ? '🔒 ' : '';
+        // Title (large, center-left)
         const titleText = r.title || '함대';
-        this.addUI(this.add.text(listX + 70, ry + rowH / 2 - 3, `${lock}${titleText}`, {
+        this.addUI(this.add.text(listX + 70, ry + rowH / 2 - 3, titleText, {
           fontSize: '14px',
           fontFamily: 'monospace',
           color: '#E8F4FF',
@@ -367,13 +358,7 @@ export class LobbyScene extends Phaser.Scene {
           .setInteractive({ useHandCursor: true });
         hit.on('pointerdown', () => {
           const name = sanitize(this.nameInput?.value || '') || 'Captain';
-          if (r.hasPassword) {
-            const pw = (window.prompt('방 암호를 입력하세요') || '').trim();
-            if (!pw) return;
-            NetworkManager.joinRoom(r.id, name, pw);
-          } else {
-            NetworkManager.joinRoom(r.id, name);
-          }
+          NetworkManager.joinRoom(r.id, name);
         });
         this.addUI(hit);
       });
@@ -420,23 +405,17 @@ export class LobbyScene extends Phaser.Scene {
 
     this.roomInput = this.createHtmlInput(w / 2 - 120, h * 0.45, 240, 50, 'XXXX', 4, true);
 
-    this.addUI(this.add.text(w / 2, h * 0.58, 'PASSWORD (암호방이면 입력)', {
-      fontSize: '11px', fontFamily: 'monospace', color: '#8BA8CC',
-    }).setOrigin(0.5));
-    this.passwordInput = this.createHtmlInput(w / 2 - 120, h * 0.58 + 14, 240, 34, '선택 입력', 16);
-
-    this.makeButton(w / 2, h * 0.75, 240, 56, 'JOIN', 0x4A9ECC, () => {
+    this.makeButton(w / 2, h * 0.6, 240, 56, 'JOIN', 0x4A9ECC, () => {
       const name = sanitize(this.nameInput?.value || '') || 'Captain';
       const roomId = sanitize(this.roomInput?.value || '').toUpperCase();
       if (!/^[A-Z0-9]{4}$/.test(roomId)) {
         this.setStatus('방 코드 4자리를 입력하세요');
         return;
       }
-      const pw = (this.passwordInput?.value || '').trim();
-      NetworkManager.joinRoom(roomId, name, pw || undefined);
+      NetworkManager.joinRoom(roomId, name);
     });
 
-    this.makeButton(w / 2, h * 0.75 + 70, 240, 50, 'BACK', 0x666666, () => {
+    this.makeButton(w / 2, h * 0.6 + 70, 240, 50, 'BACK', 0x666666, () => {
       this.setMode('menu');
     });
   }
@@ -478,48 +457,10 @@ export class LobbyScene extends Phaser.Scene {
     this.drawTeamPanel(20, panelY, panelW, panelH, 0, room);
     this.drawTeamPanel(40 + panelW, panelY, panelW, panelH, 1, room);
 
-    // Ship selector
+    // Ship is chosen in-game via the shop — no pre-select in lobby.
     const me = NetworkManager.getMe();
     if (me) {
-      this.addUI(this.add.text(w / 2, panelY + panelH + 20, 'YOUR SHIP', {
-        fontSize: '12px',
-        fontFamily: 'monospace',
-        color: '#8BA8CC',
-      }).setOrigin(0.5));
-
-      const ships: ShipId[] = ['destroyer', 'cruiser', 'battleship'];
-      const shipNames = ['Destroyer', 'Cruiser', 'Battleship'];
-      const btnW = 100;
-      const gap = 8;
-      const totalW = ships.length * btnW + (ships.length - 1) * gap;
-      const startX = (w - totalW) / 2;
-
-      ships.forEach((sid, i) => {
-        const isSelected = me.shipId === sid;
-        const x = startX + i * (btnW + gap) + btnW / 2;
-        const y = panelY + panelH + 55;
-
-        const g = this.add.graphics();
-        g.fillStyle(isSelected ? 0xF5A623 : 0x1A3A5C, 1);
-        g.fillRoundedRect(x - btnW / 2, y - 18, btnW, 36, 6);
-        g.lineStyle(2, isSelected ? 0xFFDD66 : 0x2E6DA4, 1);
-        g.strokeRoundedRect(x - btnW / 2, y - 18, btnW, 36, 6);
-        this.addUI(g);
-
-        this.addUI(this.add.text(x, y, shipNames[i], {
-          fontSize: '12px',
-          fontFamily: 'monospace',
-          color: isSelected ? '#0A1628' : '#E8F4FF',
-          fontStyle: 'bold',
-        }).setOrigin(0.5));
-
-        const hit = this.add.rectangle(x, y, btnW, 36, 0x000000, 0).setInteractive();
-        hit.on('pointerdown', () => NetworkManager.setShip(sid));
-        this.addUI(hit);
-      });
-
-      // Ready button
-      const readyY = panelY + panelH + 110;
+      const readyY = panelY + panelH + 40;
       const isReady = me.ready;
       this.makeButton(
         w / 2, readyY, 240, 50,
