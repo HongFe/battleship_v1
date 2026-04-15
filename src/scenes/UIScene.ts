@@ -5,6 +5,14 @@ import { Colors, Hex, Fonts } from '../config/theme';
 import { AudioManager } from '../utils/AudioManager';
 import { UserProfile } from '../utils/UserProfile';
 import { RankingAPI } from '../utils/RankingAPI';
+import { NetworkManager } from '../network/NetworkManager';
+
+interface ChatEntry {
+  from: string;
+  team: number;
+  text: string;
+  bornAt: number;
+}
 
 interface HUDData {
   hp: number;
@@ -36,6 +44,11 @@ export class UIScene extends Phaser.Scene {
   private shopDragStartX: number = 0;
   private shopDragStartScroll: number = 0;
   private shopWasDragged: boolean = false;
+  // Multiplayer chat overlay state
+  private chatLog: ChatEntry[] = [];
+  private chatText!: Phaser.GameObjects.Text;
+  private chatInput: HTMLInputElement | null = null;
+  private chatButtonHit?: Phaser.GameObjects.Rectangle;
   private shopElements: Phaser.GameObjects.GameObject[] = [];
   private currentCategory: ShopCategory = 'weapon';
   private currentWeaponCategory: WeaponCategory | 'all' = 'all';
@@ -80,7 +93,9 @@ export class UIScene extends Phaser.Scene {
     this.shopScrollMax = 0;
     this.shopDragActive = false;
     this.shopWasDragged = false;
+    this.chatLog = [];
     this.setupShopSwipe();
+    this.setupChat();
     const w = this.scale.width;
     const h = this.scale.height;
 
@@ -1682,6 +1697,121 @@ export class UIScene extends Phaser.Scene {
       this.shopDragActive = false;
       // Keep shopWasDragged true for a tick so BUY pointerup ignores the gesture
       this.time.delayedCall(30, () => { this.shopWasDragged = false; });
+    });
+  }
+
+  // ========== MULTIPLAYER CHAT ==========
+
+  /** Install chat overlay — only wires listeners once the game is running.
+   *  Shows nothing if this isn't a multiplayer session. */
+  private setupChat(): void {
+    const gameScene = this.scene.get('GameScene') as any;
+    const isMulti = !!gameScene?.isMultiplayer;
+    if (!isMulti) return;
+
+    // Message log — 4 most recent messages, top-left, above minimap area
+    this.chatText = this.add.text(10, 44, '', {
+      fontSize: '12px',
+      fontFamily: 'monospace',
+      color: '#FFFFFF',
+      backgroundColor: '#0A1628AA',
+      padding: { left: 6, right: 6, top: 3, bottom: 3 },
+      wordWrap: { width: 260 },
+    }).setScrollFactor(0).setDepth(120).setAlpha(0.9);
+
+    // Speech-bubble button — to the left of the shop button
+    const h = this.scale.height;
+    const w = this.scale.width;
+    const btnSize = 48;
+    const btnX = w - btnSize - 85;
+    const btnY = h - btnSize - 150;
+    const g = this.add.graphics().setScrollFactor(0).setDepth(100);
+    g.fillStyle(0x2E6DA4, 1);
+    g.fillRoundedRect(btnX, btnY, btnSize, btnSize, 10);
+    g.lineStyle(2, 0x88CCEE, 0.8);
+    g.strokeRoundedRect(btnX, btnY, btnSize, btnSize, 10);
+    this.add.text(btnX + btnSize / 2, btnY + btnSize / 2, '💬', {
+      fontSize: '22px',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+    this.chatButtonHit = this.add.rectangle(btnX + btnSize / 2, btnY + btnSize / 2, btnSize, btnSize, 0, 0)
+      .setScrollFactor(0).setDepth(102).setInteractive();
+    this.chatButtonHit.on('pointerdown', () => this.openChatInput());
+
+    // Keyboard shortcut: Enter to open chat
+    this.input.keyboard?.on('keydown-ENTER', () => {
+      if (!this.chatInput) this.openChatInput();
+    });
+
+    // Receive chat messages (reattach safe: removeAllListeners clears prior)
+    NetworkManager.removeAllListeners('chat');
+    NetworkManager.on('chat', (m: { from: string; team: number; text: string }) => {
+      this.pushChat(m.from, m.team, m.text);
+    });
+
+    // Periodic cleanup so old messages fade away without a new message push
+    this.time.addEvent({ delay: 1000, loop: true, callback: () => this.redrawChat() });
+  }
+
+  private pushChat(from: string, team: number, text: string): void {
+    this.chatLog.push({ from, team, text, bornAt: this.time.now });
+    if (this.chatLog.length > 6) this.chatLog.shift();
+    this.redrawChat();
+  }
+
+  private redrawChat(): void {
+    if (!this.chatText) return;
+    const lines: string[] = [];
+    const now = this.time.now;
+    for (const e of this.chatLog) {
+      const age = now - e.bornAt;
+      if (age > 10000) continue;
+      const prefix = e.team === 0 ? '🔵' : '🔴';
+      lines.push(`${prefix} ${e.from}: ${e.text}`);
+    }
+    this.chatText.setText(lines.join('\n'));
+  }
+
+  private openChatInput(): void {
+    if (this.chatInput) return;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.maxLength = 120;
+    inp.placeholder = '메시지 입력 (Enter 전송, Esc 취소)';
+    inp.style.position = 'absolute';
+    inp.style.left = '10px';
+    inp.style.bottom = '80px';
+    inp.style.width = 'calc(100% - 20px)';
+    inp.style.maxWidth = '420px';
+    inp.style.height = '40px';
+    inp.style.padding = '0 10px';
+    inp.style.background = '#0A1628EE';
+    inp.style.border = '2px solid #2E6DA4';
+    inp.style.borderRadius = '6px';
+    inp.style.color = '#FFFFFF';
+    inp.style.fontSize = '15px';
+    inp.style.fontFamily = 'monospace';
+    inp.style.zIndex = '999';
+    inp.style.outline = 'none';
+    document.body.appendChild(inp);
+    this.chatInput = inp;
+    setTimeout(() => inp.focus(), 30);
+
+    const close = () => {
+      inp.parentElement?.removeChild(inp);
+      this.chatInput = null;
+    };
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const text = inp.value.trim();
+        if (text) NetworkManager.sendChat(text);
+        close();
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+    inp.addEventListener('blur', () => {
+      // Close on blur so a tap outside dismisses the input cleanly on mobile
+      setTimeout(close, 150);
     });
   }
 

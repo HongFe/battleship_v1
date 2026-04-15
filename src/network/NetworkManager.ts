@@ -125,7 +125,14 @@ class NetworkManagerClass extends Phaser.Events.EventEmitter {
         this.room = msg.room;
         this.emit('player_left', msg.playerId, msg.room);
         break;
+      case 'chat':
+        this.emit('chat', { from: msg.from, fromId: msg.fromId, team: msg.team, text: msg.text });
+        break;
     }
+  }
+
+  sendChat(text: string): void {
+    this.send({ type: 'chat', text });
   }
 
   send(msg: any): void {

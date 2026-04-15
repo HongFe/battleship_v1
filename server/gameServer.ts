@@ -44,8 +44,16 @@ const VALID_ROOM_ID = /^[A-Z0-9]{4}$/;
 const VALID_MSG_TYPES = new Set([
   'create_room', 'join_room', 'set_team', 'set_ship',
   'set_ready', 'start_game', 'player_state', 'player_action', 'leave_room',
-  'list_rooms',
+  'list_rooms', 'chat',
 ]);
+
+/** Trim chat text, strip control chars, cap length */
+function sanitizeChat(raw: string): string {
+  return (raw || '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, 120);
+}
 
 /** Strip HTML-sensitive and control chars from player name */
 function sanitizeName(raw: string): string {
@@ -435,6 +443,20 @@ export function setupGameServer(wss: WebSocketServer) {
             })
             .slice(0, 50);
           send(ws, { type: 'room_list', rooms: list });
+          break;
+        }
+
+        case 'chat': {
+          if (!player || !currentRoom) return;
+          const text = sanitizeChat(msg.text);
+          if (!text) return;
+          broadcast(currentRoom, {
+            type: 'chat',
+            from: player.name,
+            fromId: player.id,
+            team: player.team,
+            text,
+          });
           break;
         }
 
