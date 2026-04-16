@@ -22,6 +22,7 @@ const SHIP_SPRITE_ROT_OFFSET: Record<string, number> = {
   yamato: -Math.PI / 2,      // drawn horizontal, bow right
   medic: -Math.PI / 2,       // drawn broadside, bow right
   carrier: Math.PI / 2,      // drawn horizontal, bow left
+  turtleship: Math.PI,       // dragon head drawn at bottom of sprite
 };
 
 export class Ship extends Phaser.Physics.Arcade.Sprite {
@@ -496,20 +497,7 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     // Sprite art points UP, Phaser rotation 0 = right, so add PI/2.
     // Some ships have per-sprite orientation fixes.
     const extraRot = SHIP_SPRITE_ROT_OFFSET[this.config.id] ?? 0;
-    // Kraken tentacle motion: rotation wobble + squash/stretch so the body
-    // pulses; overlay graphic draws wiggling tentacle tips.
-    let wobble = 0;
-    if (this.config.id === 'kraken') {
-      const speed = (this.body as Phaser.Physics.Arcade.Body)?.velocity.length() ?? 0;
-      const intensity = Math.min(speed / 60, 1) * 0.7 + 0.3; // always some motion
-      const t = this.scene.time.now * 0.006;
-      wobble = Math.sin(t) * 0.18 * intensity;
-      const sx = 1 + Math.sin(t * 1.1) * 0.06 * intensity;
-      const sy = 1 + Math.sin(t * 1.3 + Math.PI / 3) * 0.06 * intensity;
-      this.setScale(sx * this.baseScale, sy * this.baseScale);
-      this.drawKrakenTentacles(t, intensity);
-    }
-    const rot = this.heading + Math.PI / 2 + extraRot + wobble;
+    const rot = this.heading + Math.PI / 2 + extraRot;
     this.setRotation(rot);
 
     // Sync shadow & rim light
@@ -897,54 +885,6 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     this.maxHp = Math.floor((baseHp + armorHp) * (1 + this.hpBonusPct));
   }
 
-  /** Procedural tentacle overlay: 8 curved lines waving around the kraken
-   *  body. Uses bezier-ish sampled points drawn as chained line segments. */
-  private drawKrakenTentacles(t: number, intensity: number): void {
-    if (!this.krakenTentacles) {
-      this.krakenTentacles = this.scene.add.graphics().setDepth(5);
-    }
-    const g = this.krakenTentacles;
-    g.clear();
-    if (this.isDead || this.hiddenByFog) return;
-
-    const tentacleCount = 8;
-    const len = this.hullLength * 0.55;
-    const baseRadius = this.hullLength * 0.3;
-
-    for (let i = 0; i < tentacleCount; i++) {
-      const a = (i / tentacleCount) * Math.PI * 2;
-      const phase = t * 1.6 + i * 0.8;
-      // Starting anchor around the body
-      const sx = this.x + Math.cos(a) * baseRadius;
-      const sy = this.y + Math.sin(a) * baseRadius;
-
-      // Control points swept by the wave
-      const segs = 6;
-      const points: { x: number; y: number }[] = [];
-      for (let s = 0; s <= segs; s++) {
-        const u = s / segs;
-        const curlAmp = Math.sin(phase + u * 4) * 12 * intensity * u;
-        const outward = u * len;
-        const px = sx + Math.cos(a) * outward + Math.cos(a + Math.PI / 2) * curlAmp;
-        const py = sy + Math.sin(a) * outward + Math.sin(a + Math.PI / 2) * curlAmp;
-        points.push({ x: px, y: py });
-      }
-
-      // Draw tentacle as tapered line
-      for (let s = 0; s < points.length - 1; s++) {
-        const t1 = s / segs;
-        const thickness = 6 * (1 - t1) + 1;
-        const alpha = 0.85 * (1 - t1 * 0.4);
-        g.lineStyle(thickness, 0x2B7A78, alpha);
-        g.lineBetween(points[s].x, points[s].y, points[s + 1].x, points[s + 1].y);
-      }
-      // Sucker-dot tip
-      const tip = points[points.length - 1];
-      g.fillStyle(0x98E0D8, 0.9);
-      g.fillCircle(tip.x, tip.y, 2.5);
-    }
-  }
-
   /** Scan equipped specials for conditional auto-heal (autoHealThreshold =
    *  fraction of max HP that triggers, autoHealPct = heal amount, cooldown
    *  in seconds). Fires once per cooldown cycle. */
@@ -996,18 +936,28 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
   }
 
   /** Toggle this ship's visibility based on the viewer team's fog of war.
-   *  Dead ships stay hidden regardless (death hides them already). */
+   *  Dead ships stay hidden regardless. Uses a short alpha fade so ships
+   *  don't pop in/out when they skim the edge of vision. */
   setHiddenByFog(hidden: boolean): void {
     if (this.isDead) return;
     if (this.hiddenByFog === hidden) return;
     this.hiddenByFog = hidden;
-    this.setVisible(!hidden);
-    this.overlayGraphics.setVisible(!hidden);
-    this.healthBar.setVisible(!hidden);
-    this.nameText.setVisible(!hidden);
-    this.wakeGraphics.setVisible(!hidden);
-    this.shadowSprite.setVisible(!hidden);
-    this.rimLight.setVisible(!hidden);
+    const targetAlpha = hidden ? 0 : 1;
+    const parts: (Phaser.GameObjects.GameObject & { setAlpha: (v: number) => unknown })[] = [
+      this as any,
+      this.overlayGraphics as any,
+      this.healthBar as any,
+      this.nameText as any,
+      this.wakeGraphics as any,
+      this.shadowSprite as any,
+      this.rimLight as any,
+    ];
+    this.scene.tweens.add({
+      targets: parts,
+      alpha: targetAlpha,
+      duration: hidden ? 240 : 120,
+      ease: 'Cubic.Out',
+    });
   }
 
   /** Activate the ship's signature skill. Returns true if used.

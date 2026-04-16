@@ -1419,14 +1419,14 @@ export class GameScene extends Phaser.Scene {
     // Fog of War — gather vision sources from player's team
     const visionSources: { x: number; y: number; range: number }[] = [];
     if (!this.player.isDead) {
-      visionSources.push({ x: this.player.x, y: this.player.y, range: 280 });
+      visionSources.push({ x: this.player.x, y: this.player.y, range: 220 });
     }
     for (const ally of this.allies) {
-      if (!ally.isDead) visionSources.push({ x: ally.x, y: ally.y, range: 200 });
+      if (!ally.isDead) visionSources.push({ x: ally.x, y: ally.y, range: 170 });
     }
     for (const tower of this.towers) {
       if (!tower.isDead && tower.team === this.player.team) {
-        visionSources.push({ x: tower.x, y: tower.y, range: tower.isNexus ? 300 : 220 });
+        visionSources.push({ x: tower.x, y: tower.y, range: tower.isNexus ? 260 : 180 });
       }
     }
     this.fog.update(this.cameras.main, visionSources);
