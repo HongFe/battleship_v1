@@ -85,8 +85,9 @@ export class FogOfWar {
     const maxCy = Math.min(this.rows - 1, Math.floor(viewBottom / this.cellSize));
 
     // Batch by fog type for fewer style changes
-    // Pass 1: explored (semi-transparent gray)
-    g.fillStyle(0x0A1520, 0.5);
+    // Pass 1: explored (semi-transparent gray) — a touch darker so
+    // stale terrain reads as "unclear" at the zoomed-out scale.
+    g.fillStyle(0x0A1520, 0.6);
     for (let cy = minCy; cy <= maxCy; cy++) {
       for (let cx = minCx; cx <= maxCx; cx++) {
         const idx = cy * this.cols + cx;
