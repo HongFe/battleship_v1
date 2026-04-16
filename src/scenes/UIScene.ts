@@ -621,6 +621,92 @@ export class UIScene extends Phaser.Scene {
     }
 
     this.drawMinimap();
+    this.drawCompass();
+  }
+
+  private compass!: Phaser.GameObjects.Graphics;
+  private compassLabels: Phaser.GameObjects.Text[] = [];
+
+  /** Off-screen indicator ring that points at teammates (always) and
+   *  enemies (only when currently visible under fog of war). */
+  private drawCompass(): void {
+    if (!this.compass) {
+      this.compass = this.add.graphics().setScrollFactor(0).setDepth(105);
+    }
+    const g = this.compass;
+    g.clear();
+    // Clear old name labels
+    for (const t of this.compassLabels) t.destroy();
+    this.compassLabels = [];
+
+    const gameScene = this.scene.get('GameScene') as any;
+    if (!gameScene || !gameScene.player || !gameScene.isMultiplayer) return;
+    const cam = gameScene.cameras?.main;
+    if (!cam) return;
+
+    const w = this.scale.width;
+    const h = this.scale.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const margin = 70;
+    const radius = Math.min(w, h) / 2 - margin;
+
+    const myTeam = gameScene.player.team;
+    const remotes: any[] = [...(gameScene.allies ?? []), ...(gameScene.enemies ?? [])];
+
+    for (const ship of remotes) {
+      if (!ship || ship.isDead) continue;
+      const isAlly = ship.team === myTeam;
+      // Teammates always shown; enemies only if not fogged
+      if (!isAlly && ship.hiddenByFog) continue;
+
+      // Screen position
+      const sx = (ship.x - cam.worldView.x) * cam.zoom;
+      const sy = (ship.y - cam.worldView.y) * cam.zoom;
+
+      const onScreen = sx > 0 && sx < w && sy > 0 && sy < h;
+      if (onScreen) continue; // only draw for off-screen ships
+
+      const ang = Math.atan2(sy - cy, sx - cx);
+      const px = cx + Math.cos(ang) * radius;
+      const py = cy + Math.sin(ang) * radius;
+
+      const color = isAlly ? 0x66CCFF : 0xFF4444;
+
+      // Arrow pointing outward
+      g.fillStyle(color, 0.95);
+      const size = 9;
+      const tipX = px + Math.cos(ang) * size;
+      const tipY = py + Math.sin(ang) * size;
+      const baseA = ang + Math.PI / 2;
+      const baseB = ang - Math.PI / 2;
+      g.fillTriangle(
+        tipX, tipY,
+        px + Math.cos(baseA) * size, py + Math.sin(baseA) * size,
+        px + Math.cos(baseB) * size, py + Math.sin(baseB) * size,
+      );
+      g.lineStyle(1.5, 0x000000, 0.6);
+      g.strokeTriangle(
+        tipX, tipY,
+        px + Math.cos(baseA) * size, py + Math.sin(baseA) * size,
+        px + Math.cos(baseB) * size, py + Math.sin(baseB) * size,
+      );
+
+      // Name label just inside the arrow
+      const label = ship.displayName || '';
+      if (label) {
+        const lx = cx + Math.cos(ang) * (radius - 18);
+        const ly = cy + Math.sin(ang) * (radius - 18);
+        const t = this.add.text(lx, ly, label, {
+          fontSize: '10px',
+          fontFamily: '"Noto Sans KR", sans-serif',
+          color: isAlly ? '#AADDFF' : '#FFAAAA',
+          backgroundColor: '#0A1628AA',
+          padding: { left: 3, right: 3, top: 1, bottom: 1 },
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(106);
+        this.compassLabels.push(t);
+      }
+    }
   }
 
   private drawMinimap(): void {
@@ -645,9 +731,10 @@ export class UIScene extends Phaser.Scene {
     const mapH = this.balance.map.worldHeight;
     const scale = size / mapW;
 
-    // Islands
+    // Islands — only drawn once the player's team has explored that cell.
     if (gameScene.islands) {
       for (const island of gameScene.islands) {
+        if (gameScene.fog && !gameScene.fog.isExplored?.(island.x, island.y)) continue;
         const color = island.type === 'rocks' ? 0x666666 : 0x4A7A3A;
         mm.fillStyle(color, 0.7);
         mm.fillCircle(mx + island.x * scale, my + island.y * scale, island.radius * scale);
@@ -660,9 +747,11 @@ export class UIScene extends Phaser.Scene {
       mm.strokeCircle(mx + (mapW / 2) * scale, my + (mapH / 2) * scale, gameScene.safeZoneRadius * scale);
     }
 
-    // Towers + Nexus
+    // Towers + Nexus — own team always visible; enemy ones only if explored.
+    const myTeam = gameScene.player?.team ?? 0;
     for (const tower of gameScene.towers ?? []) {
       if (tower.isDead) continue;
+      if (tower.team !== myTeam && gameScene.fog && !gameScene.fog.isExplored?.(tower.x, tower.y)) continue;
       const color = tower.team === 0 ? 0x66CCFF : 0xFF4444;
       mm.fillStyle(color, 1);
       const r = tower.isNexus ? 4 : 2.5;
@@ -680,23 +769,26 @@ export class UIScene extends Phaser.Scene {
       mm.fillCircle(mx + ally.x * scale, my + ally.y * scale, 2);
     }
 
-    // Enemies (red)
+    // Enemies (red) — only plot ships currently visible under fog of war.
     for (const enemy of gameScene.enemies ?? []) {
       if (enemy.isDead) continue;
+      if (enemy.hiddenByFog) continue;
       mm.fillStyle(0xFF4444, 0.9);
       mm.fillCircle(mx + enemy.x * scale, my + enemy.y * scale, 2);
     }
 
-    // Creeps
+    // Creeps — also gated by fog so neutral units don't leak positional intel
     for (const creep of gameScene.creeps ?? []) {
       if (!creep.active) continue;
+      if (gameScene.fog && !gameScene.fog.isVisible?.(creep.x, creep.y)) continue;
       mm.fillStyle(0xAA6644, 0.5);
       mm.fillCircle(mx + creep.x * scale, my + creep.y * scale, 1);
     }
 
-    // Pirate NPCs (purple dots)
+    // Pirate NPCs (purple dots) — fog gated
     for (const pirate of [...(gameScene.pirateNPCs ?? []), ...(gameScene.pirateBosses ?? [])]) {
       if (pirate.isDead) continue;
+      if (pirate.hiddenByFog) continue;
       const isBoss = (gameScene.pirateBosses ?? []).includes(pirate);
       mm.fillStyle(isBoss ? 0xFFAA00 : 0xAA44CC, 0.9);
       const r = isBoss ? 3.5 : 2;
@@ -707,9 +799,10 @@ export class UIScene extends Phaser.Scene {
       }
     }
 
-    // Treasure pickups (gold diamond)
+    // Treasure pickups (gold diamond) — fog gated
     for (const tp of gameScene.treasures ?? []) {
       if (!tp.active) continue;
+      if (gameScene.fog && !gameScene.fog.isVisible?.(tp.x, tp.y)) continue;
       mm.fillStyle(Hex.brightGold, 1);
       const tx = mx + tp.x * scale;
       const ty = my + tp.y * scale;

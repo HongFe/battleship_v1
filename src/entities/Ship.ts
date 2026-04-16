@@ -933,8 +933,10 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
 
   /** Override the text label above the ship — used in multiplayer so each
    *  ship shows its owning player's captain name instead of a generic tag. */
+  public displayName: string = '';
   setDisplayName(name: string): void {
     if (!name) return;
+    this.displayName = name;
     this.nameText.setText(name);
   }
 

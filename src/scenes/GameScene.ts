@@ -62,7 +62,7 @@ export class GameScene extends Phaser.Scene {
   public enemyBarracks!: Tower;    // 적 배럭 — 파괴되면 적 NPC 안 나옴
   public autoAttack!: AutoAttackSystem;
   private inputSystem!: InputSystem;
-  private fog!: FogOfWar;
+  public fog!: FogOfWar;
   private three!: ThreeScene;
   private balance!: BalanceConfig;
 
@@ -504,7 +504,10 @@ export class GameScene extends Phaser.Scene {
 
     // Camera
     this.cameras.main.startFollow(this.player, true, 0.06, 0.06);
-    this.cameras.main.setZoom(1.1);
+    // Zoomed out so more of the battlefield is visible; scales on mobile
+    // down a bit further since screens are narrower.
+    const zoomBase = this.scale.width < 600 ? 0.6 : 0.75;
+    this.cameras.main.setZoom(zoomBase);
     this.cameras.main.setBounds(0, 0, mapW, mapH);
 
     // === Modern post-processing FX (Phaser 3.60+ FX pipeline) ===
@@ -1542,18 +1545,37 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
-      // Avoid islands
+      // Avoid islands/rocks with steering-around rather than jumping the
+      // target to the far side (which caused bots to stall when an island
+      // sat directly between them and their goal).
+      let steerX = 0, steerY = 0;
+      let tooClose = false;
       for (const island of this.islands) {
-        const dist = Phaser.Math.Distance.Between(targetX, targetY, island.x, island.y);
-        if (dist < island.radius * 1.8) {
-          const avoidAngle = Phaser.Math.Angle.Between(island.x, island.y, bot.x, bot.y);
-          targetX = island.x + Math.cos(avoidAngle) * island.radius * 2.2;
-          targetY = island.y + Math.sin(avoidAngle) * island.radius * 2.2;
+        const distBot = Phaser.Math.Distance.Between(bot.x, bot.y, island.x, island.y);
+        const buffer = island.radius + 45;
+        if (distBot < buffer * 1.6) {
+          const awayAngle = Phaser.Math.Angle.Between(island.x, island.y, bot.x, bot.y);
+          const weight = Math.max(0, buffer * 1.6 - distBot) / (buffer * 1.6);
+          steerX += Math.cos(awayAngle) * weight;
+          steerY += Math.sin(awayAngle) * weight;
+          if (distBot < buffer) tooClose = true;
         }
       }
 
-      bot.targetHeading = Phaser.Math.Angle.Between(bot.x, bot.y, targetX, targetY);
-      bot.throttle = 0.85 + Phaser.Math.FloatBetween(0, 0.15);
+      if (steerX || steerY) {
+        // Blend desired target with avoidance direction
+        const desiredAngle = Phaser.Math.Angle.Between(bot.x, bot.y, targetX, targetY);
+        const avoidAngle = Math.atan2(steerY, steerX);
+        // Heavier avoidance weight the closer we are to an obstacle.
+        const avoidWeight = tooClose ? 0.75 : 0.45;
+        let dx = Math.cos(desiredAngle) * (1 - avoidWeight) + Math.cos(avoidAngle) * avoidWeight;
+        let dy = Math.sin(desiredAngle) * (1 - avoidWeight) + Math.sin(avoidAngle) * avoidWeight;
+        bot.targetHeading = Math.atan2(dy, dx);
+      } else {
+        bot.targetHeading = Phaser.Math.Angle.Between(bot.x, bot.y, targetX, targetY);
+      }
+      // Slow down a bit when hugging an obstacle so we can turn cleanly
+      bot.throttle = tooClose ? 0.55 : (0.85 + Phaser.Math.FloatBetween(0, 0.15));
     }
   }
 

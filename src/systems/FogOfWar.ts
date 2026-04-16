@@ -108,6 +108,24 @@ export class FogOfWar {
     }
   }
 
+  /** True if the grid cell under this world position is currently visible
+   *  (not fogged). Used by the minimap to hide obscured entities. */
+  isVisible(x: number, y: number): boolean {
+    const cx = Math.floor(x / this.cellSize);
+    const cy = Math.floor(y / this.cellSize);
+    if (cx < 0 || cy < 0 || cx >= this.cols || cy >= this.rows) return false;
+    return this.visible[cy * this.cols + cx] === 1;
+  }
+
+  /** True if this world position has ever been explored (even if currently
+   *  fogged). Minimap terrain uses this so explored areas stay on the map. */
+  isExplored(x: number, y: number): boolean {
+    const cx = Math.floor(x / this.cellSize);
+    const cy = Math.floor(y / this.cellSize);
+    if (cx < 0 || cy < 0 || cx >= this.cols || cy >= this.rows) return false;
+    return this.explored[cy * this.cols + cx] === 1;
+  }
+
   destroy(): void {
     this.fogGraphics?.destroy();
   }
