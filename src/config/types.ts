@@ -91,6 +91,14 @@ export interface SpecialItemConfig {
   displayName: string;
   type: 'special';
   speedMultiplier?: number;
+  damageMultiplier?: number;
+  /** Active heal triggered by skill button. */
+  activeHealPct?: number;
+  activeHealCooldown?: number;
+  /** Conditional auto-heal when HP drops below threshold. */
+  autoHealThreshold?: number;
+  autoHealPct?: number;
+  autoHealCooldown?: number;
   cost: number;
   spriteName: string;
   description: string;

@@ -1266,6 +1266,74 @@
       "cost": 300,
       "spriteName": "item_radar",
       "description": "시야 +50%, 스텔스 탐지."
+    },
+    "healing_core": {
+      "id": "healing_core",
+      "displayName": "힐링 코어",
+      "type": "special",
+      "speedMultiplier": 1.0,
+      "activeHealPct": 0.35,
+      "activeHealCooldown": 60,
+      "cost": 600,
+      "spriteName": "item_healing",
+      "description": "스킬 버튼으로 HP 35% 회복 (60초)."
+    },
+    "medical_deck": {
+      "id": "medical_deck",
+      "displayName": "의무실",
+      "type": "special",
+      "speedMultiplier": 1.0,
+      "autoHealThreshold": 0.30,
+      "autoHealPct": 0.40,
+      "autoHealCooldown": 60,
+      "cost": 500,
+      "spriteName": "item_medical",
+      "description": "HP 30% 이하 시 자동 40% 회복 (60초)."
+    },
+    "afterburner": {
+      "id": "afterburner",
+      "displayName": "애프터버너",
+      "type": "special",
+      "speedMultiplier": 2.0,
+      "cost": 550,
+      "spriteName": "item_afterburner",
+      "description": "이동속도 +100%."
+    },
+    "targeting_system": {
+      "id": "targeting_system",
+      "displayName": "조준 시스템",
+      "type": "special",
+      "speedMultiplier": 1.0,
+      "damageMultiplier": 1.25,
+      "cost": 450,
+      "spriteName": "item_targeting",
+      "description": "공격력 +25%."
+    },
+    "armor_plating": {
+      "id": "armor_plating",
+      "displayName": "중장갑 판재",
+      "type": "armor",
+      "armorBonus": 150,
+      "hpBonus": 50,
+      "effect": null,
+      "cost": 450,
+      "spriteName": "item_heavy_armor",
+      "description": "방어 +150, HP +50."
+    },
+    "barrier_field": {
+      "id": "barrier_field",
+      "displayName": "방호막 장치",
+      "type": "armor",
+      "armorBonus": 30,
+      "hpBonus": 250,
+      "effect": "shield_on_hit",
+      "effectParams": {
+        "cooldown": 4,
+        "shieldDuration": 2
+      },
+      "cost": 600,
+      "spriteName": "item_barrier",
+      "description": "HP +250, 피격 시 보호막."
     }
   },
   "recipes": [

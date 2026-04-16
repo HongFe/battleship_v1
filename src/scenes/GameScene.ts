@@ -793,16 +793,25 @@ export class GameScene extends Phaser.Scene {
         s.setHiddenByFog(false);
         continue;
       }
+      // Active stealth skill — only a friendly within 80px can see them.
+      const isStealthed = s.stealthRemaining > 0;
       const inCover = this.isInCover(s.x, s.y);
-      const revealRange = inCover ? 180 : 0;
+      const stealthRange = 80;
+      const coverRange = 180;
       let seen = false;
 
-      if (inCover) {
+      if (isStealthed) {
+        for (const src of visionSources) {
+          const dx = src.x - s.x;
+          const dy = src.y - s.y;
+          if (dx * dx + dy * dy <= stealthRange * stealthRange) { seen = true; break; }
+        }
+      } else if (inCover) {
         // Needs a close friendly to peek in
         for (const src of visionSources) {
           const dx = src.x - s.x;
           const dy = src.y - s.y;
-          if (dx * dx + dy * dy <= revealRange * revealRange) { seen = true; break; }
+          if (dx * dx + dy * dy <= coverRange * coverRange) { seen = true; break; }
         }
       } else {
         for (const src of visionSources) {

@@ -73,6 +73,11 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
   private wakeGraphics: Phaser.GameObjects.Graphics;
   /** When true, the ship is currently hidden from the viewer's team (fog of war) */
   public hiddenByFog: boolean = false;
+  /** Cooldown (seconds) for active item skills like heal. Separate from
+   *  the ship's signature skill so both can share the skill button. */
+  public itemSkillCooldown: number = 0;
+  /** Per-auto-heal-item cooldowns, keyed by item id. */
+  private autoHealCooldowns: Map<string, number> = new Map();
   private wakeParticles: { x: number; y: number; alpha: number; age: number }[] = [];
   private shadowSprite: Phaser.GameObjects.Sprite;
   private rimLight: Phaser.GameObjects.Sprite;
@@ -820,8 +825,15 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     if (this.smokeRemaining > 0) this.smokeRemaining = Math.max(0, this.smokeRemaining - dt);
     if (this.stealthRemaining > 0) {
       this.stealthRemaining = Math.max(0, this.stealthRemaining - dt);
-      this.setAlpha(this.stealthRemaining > 0 ? 0.35 : 1);
+      // Deep stealth — self sees ghost of own ship, enemies will be hidden
+      // by the vision filter in GameScene.applyVisionFilter().
+      this.setAlpha(this.stealthRemaining > 0 ? 0.15 : 1);
     }
+    // Tick item-skill cooldown (separate from main skill)
+    if (this.itemSkillCooldown > 0) this.itemSkillCooldown = Math.max(0, this.itemSkillCooldown - dt);
+    // Passive conditional heal: items with autoHealThreshold / autoHealPct
+    // trigger once when HP dips below the threshold, then go on CD.
+    this.checkAutoHealItems();
     if (this.ramRemaining > 0) this.ramRemaining = Math.max(0, this.ramRemaining - dt);
   }
 
@@ -878,6 +890,47 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     this.maxHp = Math.floor((baseHp + armorHp) * (1 + this.hpBonusPct));
   }
 
+  /** Scan equipped specials for conditional auto-heal (autoHealThreshold =
+   *  fraction of max HP that triggers, autoHealPct = heal amount, cooldown
+   *  in seconds). Fires once per cooldown cycle. */
+  private checkAutoHealItems(): void {
+    if (this.isDead) return;
+    const hpFrac = this.currentHp / Math.max(1, this.maxHp);
+    for (const item of this.equippedSpecials as any[]) {
+      const threshold = item?.autoHealThreshold;
+      const pct = item?.autoHealPct;
+      const cd = item?.autoHealCooldown ?? 60;
+      if (!threshold || !pct) continue;
+      const remaining = this.autoHealCooldowns.get(item.id) ?? 0;
+      if (remaining > 0) {
+        this.autoHealCooldowns.set(item.id, Math.max(0, remaining - 1 / 60));
+        continue;
+      }
+      if (hpFrac <= threshold) {
+        const amount = this.maxHp * pct;
+        this.heal(amount);
+        this.autoHealCooldowns.set(item.id, cd);
+      }
+    }
+  }
+
+  /** Fire an active item skill (heal) if the player has one equipped.
+   *  Called by useSkill as a fallback when the ship's main skill is on CD.
+   *  Returns true if an item skill was consumed. */
+  private tryItemSkill(): boolean {
+    if (this.itemSkillCooldown > 0) return false;
+    for (const item of this.equippedSpecials as any[]) {
+      const healPct = item?.activeHealPct;
+      const cd = item?.activeHealCooldown ?? 60;
+      if (!healPct) continue;
+      this.heal(this.maxHp * healPct);
+      this.itemSkillCooldown = cd;
+      this.spawnSkillFlash();
+      return true;
+    }
+    return false;
+  }
+
   /** Override the text label above the ship — used in multiplayer so each
    *  ship shows its owning player's captain name instead of a generic tag. */
   setDisplayName(name: string): void {
@@ -900,11 +953,14 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     this.rimLight.setVisible(!hidden);
   }
 
-  /** Activate the ship's signature skill. Returns true if used. */
+  /** Activate the ship's signature skill. Returns true if used.
+   *  Falls through to an equipped item skill (e.g. healing core) when the
+   *  main ship skill is still on cooldown. */
   useSkill(): boolean {
-    if (this.isDead || this.skillCooldown > 0) return false;
+    if (this.isDead) return false;
+    if (this.skillCooldown > 0) return this.tryItemSkill();
     const skill = this.config.skill;
-    if (!skill) return false;
+    if (!skill) return this.tryItemSkill();
 
     switch (skill.type) {
       case 'dash':
@@ -937,18 +993,38 @@ export class Ship extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.skillCooldown = skill.cooldown * (1 - this.skillCdReductPct);
-    this.spawnSkillFlash();
+    this.spawnSkillFlash(skill.type);
     return true;
   }
 
   /** Tier-scaled burst effect when a ship fires its signature skill.
-   * Higher tier ships get brighter, larger, longer-lingering auras. */
-  private spawnSkillFlash(): void {
+   * Skill-typed color signature + higher tier = brighter/larger rings. */
+  private spawnSkillFlash(skillType?: string): void {
     const scene = this.scene as Phaser.Scene;
     if (!scene) return;
     const tier = this.config.tier ?? 1;
     const baseR = 40 + tier * 18;
-    const flashColor = this.team === 0 ? 0x88DDFF : 0xFF9977;
+    // Per-skill color signature so each ability reads distinct from afar.
+    const skillColors: Record<string, number> = {
+      dash: 0x66FFEE,            // cyan
+      berserk: 0xFF3344,         // red
+      ram: 0xFF9922,             // orange
+      plunder: 0xFFD24D,         // gold
+      smoke_screen: 0xAAAAAA,    // gray
+      stealth: 0xBB88FF,         // purple
+      heal_aura: 0x3DDD77,       // green
+      war_cry: 0xFFAA33,         // amber
+      net_throw: 0x6FCCEE,       // ice-blue
+      salvo: 0xFF6644,           // fire
+      broadside: 0xFF7733,       // fire orange
+      volley: 0xFFAA55,          // bronze
+      tracer_round: 0xFFE888,    // yellow
+      plane_burst: 0xAACCFF,     // sky
+      fire_breath: 0xFF4422,     // deep red
+    };
+    const flashColor = skillType && skillColors[skillType]
+      ? skillColors[skillType]
+      : (this.team === 0 ? 0x88DDFF : 0xFF9977);
 
     // Core bright flash
     const core = scene.add.graphics().setDepth(5).setBlendMode(Phaser.BlendModes.ADD);
